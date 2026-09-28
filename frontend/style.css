@@ -90,3 +90,23 @@ input:focus {
 @keyframes blinker {
     50% { opacity: 0; }
 }
+.hidden {
+    display: none !important;
+}
+
+.toggle-text {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #050;
+}
+
+.toggle-link {
+    color: #0a0;
+    cursor: pointer;
+}
+
+.toggle-link:hover {
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+}
