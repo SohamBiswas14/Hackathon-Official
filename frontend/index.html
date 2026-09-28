@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,33 +9,57 @@
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="terminal-container">
         <header>
             <h1 class="glitch">ASTERIA_TERMINAL</h1>
-            <p class="subtitle">SYS.OP: RECRUIT_739 // TARGET: COSMO_POLO</p>
+            <p class="subtitle">SYS.OP: RECRUIT_739 <span id="target-text" class="hidden">// TARGET: COSMO_POLO</span>
+            </p>
         </header>
-
         <main class="login-box">
             <div class="status-bar">
                 <span>CONNECTION: <span class="blink">SECURE</span></span>
                 <span>AUTH_REQUIRED</span>
             </div>
-            
-            <form id="login-form">
-                <div class="input-group">
-                    <label>> RECRUIT_ID_</label>
-                    <input type="text" autocomplete="off" required>
-                </div>
-                
-                <div class="input-group">
-                    <label>> PASSKEY_</label>
-                    <input type="password" required>
-                </div>
 
-                <button type="submit" class="neon-btn">[ INITIATE_WARP ]</button>
-            </form>
+            <!-- 1. The Login Box -->
+            <div id="login-section">
+                <form id="login-form">
+                    <div class="input-group">
+                        <label>> RECRUIT_ID_</label>
+                        <input type="text" autocomplete="off" required>
+                    </div>
+                    <div class="input-group">
+                        <label>> PASSKEY_</label>
+                        <input type="password" required>
+                    </div>
+                    <button type="submit" class="neon-btn">[ INITIATE_WARP ]</button>
+                </form>
+                <p class="toggle-text">UNREGISTERED? <span id="show-signup" class="toggle-link">[ CREATE_RECORD ]</span>
+                </p>
+            </div>
+
+            <!-- 2. The Sign-Up Box (Hidden at first) -->
+            <div id="signup-section" class="hidden">
+                <form id="signup-form">
+                    <div class="input-group">
+                        <label>> NEW_RECRUIT_ID_</label>
+                        <input type="text" autocomplete="off" required>
+                    </div>
+                    <div class="input-group">
+                        <label>> ASSIGN_PASSKEY_</label>
+                        <input type="password" required>
+                    </div>
+                    <button type="submit" class="neon-btn">[ REGISTER_RECRUIT ]</button>
+                </form>
+                <p class="toggle-text">EXISTING DATA? <span id="show-login" class="toggle-link">[ AUTHENTICATE ]</span>
+                </p>
+            </div>
         </main>
+
     </div>
 </body>
+<script src="script.js"></script>
+
 </html>
