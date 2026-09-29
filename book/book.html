@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asteria Codex — Book of the Great Library</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="book.css" />
+</head>
+<body>
+
+  <div class="viewport-meta">
+    SECTOR 07 // PLANET SONIC ENIGMA // ITEM: BOOK OF THE GREAT LIBRARY
+  </div>
+
+  <div class="reopen-dock">
+    <button id="book-reopen-btn" class="retro-btn">[ OPEN BOOK CODEX ]</button>
+  </div>
+
+  <!-- Book Modal Interface -->
+  <div id="book-interface" class="book-overlay">
+    
+    <div class="hologram-hud-top">
+      <div>ARCHIVE REF: 0x424C // ASTERIA GREAT LIBRARY</div>
+      <button id="book-close-btn" class="hud-close">[ CLOSE ARCHIVE ✕ ]</button>
+    </div>
+
+    <div class="tome-chassis">
+      
+      <!-- Left Page (Folio Odd) -->
+      <div class="page-half page-left">
+        <div class="corner-ornament top-left"></div>
+        <div class="corner-ornament bottom-left"></div>
+        
+        <header class="folio-header">
+          <span>ΒΙΒΛΙΟΘΗΚΗ ΤΗΣ ΑΣΤΕΡΙΑΣ</span>
+          <span>FOLIO RECORD</span>
+        </header>
+
+        <div class="page-content" id="left-page-display"></div>
+
+        <footer class="folio-footer">
+          <span id="left-page-num">FOL. 01</span>
+        </footer>
+      </div>
+
+      <!-- Center Spine Conduit -->
+      <div class="book-spine">
+        <div class="spine-conduit"></div>
+      </div>
+
+      <!-- Right Page (Folio Even) -->
+      <div class="page-half page-right">
+        <div class="corner-ornament top-right"></div>
+        <div class="corner-ornament bottom-right"></div>
+
+        <header class="folio-header">
+          <span>CONSTELLATION ENIGMA</span>
+          <span>SECTOR 07</span>
+        </header>
+
+        <div class="page-content" id="right-page-display"></div>
+
+        <footer class="folio-footer">
+          <span id="right-page-num">FOL. 02</span>
+        </footer>
+      </div>
+
+    </div>
+
+    <!-- Navigation Spread Controls -->
+    <div class="tome-controls">
+      <button id="prev-page-btn" class="tome-nav-btn" disabled>◄ PREV FOLIOS</button>
+      <div class="folio-counter">SPREAD <span id="current-spread">1</span> / 5</div>
+      <button id="next-page-btn" class="tome-nav-btn">NEXT FOLIOS ►</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Feedback -->
+  <div id="codex-toast" class="codex-toast hidden">
+    <div class="toast-indicator"></div>
+    <span id="toast-message">ITEM ADDED TO INVENTORY</span>
+  </div>
+
+  <!-- Mission Decision Pop-up -->
+  <div id="signal-modal" class="signal-modal hidden">
+    <div class="signal-box">
+      <div class="signal-scanner"></div>
+      <div class="signal-badge">DEEP SPACE COMM INTERCEPTION</div>
+      <h2 class="signal-title">SIGNAL DETECTED</h2>
+      <p id="signal-text-content" class="signal-text">
+        "Signal detected: [32.92, -56°78, 8e32]. Cosmic waves resemble a humanoid figure. Where to go?"
+      </p>
+      <div class="signal-actions">
+        <button id="opt-aurora" class="signal-btn">[ SYSTEM AURORA ]</button>
+        <button id="opt-centuari" class="signal-btn">[ SYSTEM CENTUARI ]</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="book.js"></script>
+</body>
+</html>
