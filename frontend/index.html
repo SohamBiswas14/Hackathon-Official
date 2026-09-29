@@ -64,7 +64,139 @@
         </div>
       </main>
     </div>
+<section id="phase-3">
 
+    <h2>SYSTEM AURORA</h2>
+
+    <div id="aurora-lock">
+        🔒 PHASE 3 LOCKED
+    </div>
+
+    <div id="solar-system">
+
+        <div class="binary-star star-one"></div>
+        <div class="binary-star star-two"></div>
+
+        <div class="planet planet-1" data-planet="Planet Alpha"></div>
+        <div class="planet planet-2" data-planet="Planet Beta"></div>
+        <div class="planet planet-3" data-planet="Planet Gamma"></div>
+
+    </div>
+
+    <div id="radio-decoder">
+
+        <h3>RADIO SIGNAL DECODER</h3>
+
+        <div id="wave-display">
+
+            <div>
+                <p>INCOMING SIGNAL</p>
+                <canvas id="inputWave"></canvas>
+            </div>
+
+            <div>
+                <p>OUTPUT WAVE</p>
+                <canvas id="outputWave"></canvas>
+            </div>
+
+        </div>
+
+        <div id="decoder-controls">
+
+            <div class="knob-control">
+                <label for="pitchKnob">PITCH</label>
+                <input id="pitchKnob" type="range" min="0" max="12" value="6">
+                <span id="pitchValue">6</span>
+            </div>
+
+            <div class="knob-control">
+                <label for="amplitudeKnob">AMPLITUDE</label>
+                <input id="amplitudeKnob" type="range" min="0" max="12" value="6">
+                <span id="amplitudeValue">6</span>
+            </div>
+
+            <div class="knob-control">
+                <label for="noiseKnob">NOISE</label>
+                <input id="noiseKnob" type="range" min="0" max="12" value="6">
+                <span id="noiseValue">6</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="time-code">
+
+        <h3>TIME CODE</h3>
+
+        <input id="timeInput" type="time">
+
+        <button id="decodeTime">
+            DECODE TIME
+        </button>
+
+    </div>
+
+</section>
+</div>
+
+</section>
+
+<!-- NASA CLUE D -->
+<section id="nasa-clue">
+
+    <h2>NASA ANOMALY</h2>
+
+    <p id="nasa-status">LOADING NASA DATA...</p>
+
+    <div id="nasa-display">
+
+        <img
+            id="apodImage"
+            src=""
+            alt="NASA Astronomy Picture of the Day"
+        >
+
+    </div>
+
+    <div id="nasa-controls">
+
+        <label>
+            BRIGHTNESS
+            <input
+                id="brightness"
+                type="range"
+                min="0"
+                max="200"
+                value="100"
+            >
+        </label>
+
+        <label>
+            CONTRAST
+            <input
+                id="contrast"
+                type="range"
+                min="0"
+                max="200"
+                value="100"
+            >
+        </label>
+
+        <label>
+            HUE
+            <input
+                id="hue"
+                type="range"
+                min="0"
+                max="360"
+                value="0"
+            >
+        </label>
+
+    </div>
+
+</section>
     <script src="script.js"></script>
     <!-- Mission Control Pop-up -->
     <div id="mission-modal" class="modal hidden">
