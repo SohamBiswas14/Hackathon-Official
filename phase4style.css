@@ -1,0 +1,53 @@
+/* =========================================
+   PHASE 4: SYSTEM CENTAURI - CUSTOM STYLES
+========================================= */
+
+
+/* Custom 3D perspective for the Metallic Dyson Rings */
+
+.perspective-container {
+    perspective: 1200px;
+    transform-style: preserve-3d;
+}
+
+
+/* 3D Rotations for each individual ring */
+
+.ring-x {
+    transform: rotateX(75deg);
+}
+
+.ring-y {
+    transform: rotateY(75deg);
+}
+
+.ring-z {
+    transform: rotateX(45deg) rotateY(45deg);
+}
+
+
+/* Sun Heat Glow Animation for the Core */
+
+@keyframes solar-glow {
+    0%,
+    100% {
+        box-shadow: 0 0 100px 30px rgba(255, 140, 0, 0.8), inset 0 0 30px rgba(255, 255, 255, 0.6);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 150px 50px rgba(255, 69, 0, 1), inset 0 0 50px rgba(255, 255, 255, 0.9);
+        transform: scale(1.05);
+    }
+}
+
+.animate-solar {
+    animation: solar-glow 4s ease-in-out infinite;
+}
+
+
+/* Screen shake for the Game Over explosion state */
+
+.critical-shake {
+    animation: glitch 0.1s infinite;
+    filter: saturate(300%) contrast(200%) invert(10%);
+}
