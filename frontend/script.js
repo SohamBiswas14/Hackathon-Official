@@ -1,16 +1,8 @@
 const loginSection = document.getElementById('login-section');
 const signupSection = document.getElementById('signup-section');
-const showSignupBtn = document.getElementById('show-signup');
 const showLoginBtn = document.getElementById('show-login');
 const loginForm = document.getElementById('login-form');
 const targetText = document.getElementById('target-text');
-
-if (showSignupBtn && loginSection && signupSection) {
-  showSignupBtn.addEventListener('click', () => {
-    loginSection.classList.add('hidden');
-    signupSection.classList.remove('hidden');
-  });
-}
 
 if (showLoginBtn && loginSection && signupSection) {
   showLoginBtn.addEventListener('click', () => {
