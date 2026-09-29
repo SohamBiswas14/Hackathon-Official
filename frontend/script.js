@@ -25,30 +25,12 @@ function handleAuthSuccess(player) {
   sessionStorage.setItem('asteria_player', JSON.stringify(player));
   document.querySelector('.terminal-container').classList.add('hidden');
 
-  // FIXED: Targeting the exact IDs from your index.html
-  document.getElementById('agent-name-display').textContent = player.username;
-  document.getElementById('agent-name-display-2').textContent = player.username;
+    document.querySelectorAll('.agent-name').forEach((element) => {
+        element.textContent = player.username;
+    });
 
   const missionModal = document.getElementById('mission-modal');
   missionModal.classList.remove('hidden');
-
-  // FIXED: Button IDs match the HTML
-  document.getElementById('btn-accept').addEventListener('click', () => {
-    const button = document.getElementById('btn-accept');
-    button.innerText = '[ INITIATING PHASE 2... ]';
-
-    setTimeout(() => {
-      missionModal.classList.add('hidden');
-      console.log('Proceeding to Phase 2...');
-      // Phase 2 redirect will go here
-    }, 5000);
-  });
-
-  // FIXED: Button IDs match the HTML
-  document.getElementById('btn-decline').addEventListener('click', () => {
-    missionModal.classList.add('hidden');
-    document.getElementById('decline-screen').classList.remove('hidden');
-  });
 }
 
 function showError(message) {
@@ -96,8 +78,18 @@ signupForm.addEventListener('submit', (event) => {
   submitAuthForm(signupForm, '/api/signup');
 });
 
-  });
-}
+document.getElementById('accept-btn').addEventListener('click', () => {
+    document.getElementById('mission-modal').classList.add('hidden');
+    document.getElementById('phase-3').classList.remove('hidden');
+    document.getElementById('nasa-clue').classList.remove('hidden');
+    document.getElementById('aurora-lock').textContent = 'PHASE 3 ACTIVE';
+    document.getElementById('phase-3').scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('decline-btn').addEventListener('click', () => {
+    document.getElementById('mission-modal').classList.add('hidden');
+    document.getElementById('decline-screen').classList.remove('hidden');
+});
 
 // ===============================
 // PHASE 3 - SYSTEM AURORA
@@ -322,18 +314,15 @@ if (phase3) {
         const minutes =
             timeParts[1];
 
-        const firstMinute =
-            Number(minutes[0]);
-
-        const secondMinute =
-            Number(minutes[1]);
+        const minuteTens = Number(minutes[0]);
+        const minuteOnes = Number(minutes[1]);
 
 
         // Put the time digits into the three knobs
 
         pitchKnob.value = hour;
-        amplitudeKnob.value = firstMinute;
-        noiseKnob.value = secondMinute;
+        amplitudeKnob.value = minuteOnes;
+        noiseKnob.value = minuteTens;
 
 
         updateValues();
@@ -389,7 +378,7 @@ async function loadNASAImage() {
             "CONNECTING TO NASA...";
 
         const response = await fetch(
-            "https://science.nasa.gov/wp-json/wp/v2/apod-basic/?api_key=DEMO_KEY"
+            "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
         );
 
         if (!response.ok) {

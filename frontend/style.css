@@ -8,16 +8,14 @@ body {
   background-color: #050505;
   color: #0f0;
   font-family: "Share Tech Mono", monospace;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .terminal-container {
   width: 90%;
   max-width: 500px;
+  margin: 10vh auto;
   border: 1px solid #0f0;
   padding: 2rem;
   background: rgba(0, 20, 0, 0.8);
@@ -201,6 +199,7 @@ input:focus {
   max-width: 800px;
   line-height: 1.6;
   font-family: sans-serif; /* Breaks the terminal theme for comedic effect */
+}
 
 /* =================================
    PHASE 3 - SYSTEM AURORA
@@ -600,4 +599,5 @@ input:focus {
 #nasa-controls input {
     width: 180px;
     cursor: pointer;
+}
 
