@@ -14,7 +14,22 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
-  discoveredTruth: {
+  currentLocation: {
+    type: String,
+    default: 'Mission Control',
+  },
+  inventory: {
+    type: [String],
+    default: [
+      'Map',
+      'Book of the Great Library',
+      'Radio Signal Tuner',
+      'Hacking System',
+      'Poison',
+      'Hints',
+    ],
+  },
+  isEliminated: {
     type: Boolean,
     default: false,
   },

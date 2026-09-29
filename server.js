@@ -127,5 +127,105 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// ==========================================
+// GAME CONFIGURATION (SERVER AUTHORITY)
+// ==========================================
+const GAME_LOCATIONS = [
+  'Mission Control', // Phase 1
+  'Planet Sonic Enigma', // Phase 2
+  'System Aurora', // Phase 3
+  'Abyssal Void', // Phase 4
+  'The Singularity', // Phase 5
+];
+
+// ==========================================
+// SECURE API ENDPOINTS
+// ==========================================
+
+// 1. SECURE SAVE GAME (Inventory only)
+app.post('/api/game/save', async (req, res) => {
+  try {
+    const { username, inventory } = req.body;
+    if (!username) return res.status(400).json({ error: 'Username required.' });
+
+    const updatedPlayer = await User.findOneAndUpdate(
+      { username: username, isEliminated: false },
+      { inventory: inventory },
+      { new: true }
+    );
+
+    if (!updatedPlayer) return res.status(404).json({ error: 'Player not found or eliminated.' });
+
+    return res.json({ message: 'Inventory saved.', player: updatedPlayer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Save failed.' });
+  }
+});
+
+// 2. MAP DATA (Dynamic Lock Generation)
+app.get('/api/game/map/:username', async (req, res) => {
+  try {
+    const player = await User.findOne({ username: req.params.username });
+    if (!player) return res.status(404).json({ error: 'Player not found.' });
+
+    const mapData = GAME_LOCATIONS.map((loc, index) => {
+      const phaseNumber = index + 1;
+      return {
+        id: phaseNumber,
+        name: loc,
+        isLocked: phaseNumber > player.currentLevel,
+      };
+    });
+
+    return res.json({ mapLocations: mapData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch map data.' });
+  }
+});
+
+// 3. SECURE PHASE PROGRESSION (Strictly Sequential)
+app.post('/api/game/advance-phase', async (req, res) => {
+  try {
+    const { username } = req.body;
+    const player = await User.findOne({ username: username });
+
+    if (!player) return res.status(404).json({ error: 'Player not found.' });
+    if (player.isEliminated) return res.status(403).json({ error: 'Player is eliminated.' });
+
+    if (player.currentLevel < 5) {
+      player.currentLevel += 1;
+      player.currentLocation = GAME_LOCATIONS[player.currentLevel - 1];
+      await player.save();
+    }
+
+    return res.json({
+      message: 'Phase completed. Warp drive engaged.',
+      newLevel: player.currentLevel,
+      newLocation: player.currentLocation,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to advance phase.' });
+  }
+});
+
+// 4. ELIMINATION (Poison Item)
+app.post('/api/game/eliminate', async (req, res) => {
+  try {
+    const { username } = req.body;
+    await User.findOneAndUpdate({ username: username }, { isEliminated: true });
+
+    return res.json({
+      message: 'lol imagine getting eliminated by yourself 🤣 gg ez',
+      isEliminated: true,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to process elimination.' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
