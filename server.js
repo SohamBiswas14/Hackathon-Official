@@ -227,5 +227,59 @@ app.post('/api/game/eliminate', async (req, res) => {
   }
 });
 
+// 5. PHASE 3: SYSTEM AURORA SIGNAL DECODER
+app.post('/api/phase3/verify-signal', async (req, res) => {
+  try {
+    const { username, knob1, knob2, knob3 } = req.body;
+    const player = await User.findOne({ username });
+
+    if (!player) return res.status(404).json({ error: 'Player not found.' });
+    if (player.currentLevel !== 3) {
+      return res.status(403).json({ error: 'Access denied: You are not in System Aurora.' });
+    }
+
+    // Fetch current server time in IST (12-hour format for the 0-12 knob requirement)
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    // Check against current minute and previous minute (in case the clock ticks while they click)
+    const timesToCheck = [new Date(), new Date(Date.now() - 60000)];
+    let isMatch = false;
+
+    for (let time of timesToCheck) {
+      const parts = formatter.formatToParts(time);
+      const hour = parseInt(parts.find((p) => p.type === 'hour').value, 10);
+      const minuteStr = parts.find((p) => p.type === 'minute').value;
+      const minTens = parseInt(minuteStr[0], 10);
+      const minOnes = parseInt(minuteStr[1], 10);
+
+      if (parseInt(knob1) === hour && parseInt(knob2) === minTens && parseInt(knob3) === minOnes) {
+        isMatch = true;
+        break;
+      }
+    }
+
+    if (isMatch) {
+      return res.json({
+        success: true,
+        secretCode: 'ALPHA-9-CORE',
+        message: 'Signal decoded successfully.',
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: 'Signal unsynchronized. The frequency does not match the current spacetime.',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server singularity error during signal verification.' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
