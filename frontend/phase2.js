@@ -1,267 +1,249 @@
-const container = document.getElementById('canvas-container');
+window.addEventListener('DOMContentLoaded', () => {
+    // --- 1. SCENE, CAMERA & RENDERER SETUP ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 50;
 
-// 1. Core Three.js Setup (Scene, Camera, Renderer)
-const scene = new THREE.Scene();
-// 75 degree field of view, matching browser aspect ratio
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 50; // Pull the camera back so we can see the stars
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-// Inject the 3D canvas into our HTML container
-container.appendChild(renderer.domElement);
-
-// 2. Generate the Starry Background
-const starsGeometry = new THREE.BufferGeometry();
-const starsCount = 2000;
-const posArray = new Float32Array(starsCount * 3);
-
-// Create 2000 random X, Y, Z coordinates
-for(let i = 0; i < starsCount * 3; i++) {
-    posArray[i] = (Math.random() - 0.5) * 200; 
-}
-
-starsGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-// Make the stars small and white
-const starsMaterial = new THREE.PointsMaterial({ size: 0.15, color: 0xffffff });
-const starMesh = new THREE.Points(starsGeometry, starsMaterial);
-scene.add(starMesh);
-
-// 3. Animation Loop (Keeps the scene rendering every frame)
-function animate() {
-    requestAnimationFrame(animate);
-    
-    // Slowly rotate the entire star field for a cool space effect
-    starMesh.rotation.y += 0.0003;
-    starMesh.rotation.x += 0.0001;
-
-    renderer.render(scene, camera);
-}
-animate();
-
-// 4. Handle Window Resizing
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-});
-// --- INVENTORY & UI LOGIC ---
-// --- INTERACTIVE CONSTELLATION (BIG DIPPER) ---
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-const interactiveStars = [];
-const selectedStars = [];
-const drawnLines = [];
 
-// 1. GENERATE RETRO PIXEL STAR TEXTURE
-function createStarTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    
-    // Draw the 4-point cross shape from your reference image
-    ctx.fillStyle = '#ffcc00'; // Main yellow
-    ctx.fillRect(6, 6, 4, 4);  // Center
-    ctx.fillRect(7, 2, 2, 4);  // Top point
-    ctx.fillRect(7, 10, 2, 4); // Bottom point
-    ctx.fillRect(2, 7, 4, 2);  // Left point
-    ctx.fillRect(10, 7, 4, 2); // Right point
-    
-    // Inner bright core
-    ctx.fillStyle = '#ffff66';
-    ctx.fillRect(7, 7, 2, 2);
+    renderer.domElement.style.position = 'fixed';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.zIndex = '0';
+    document.body.appendChild(renderer.domElement);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.magFilter = THREE.NearestFilter; // Keeps the edges pixelated and crisp
-    return texture;
-}
+    // --- 2. 3D VOLUMETRIC BACKGROUND STARFIELD ---
+    const particleCount = 800;
+    const particleGeometry = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
 
-const starTexture = createStarTexture();
-const baseMaterial = new THREE.SpriteMaterial({ 
-    map: starTexture, 
-    color: 0xffffff, 
-    transparent: true 
-});
-// 2. WIDE-SPAN COORDINATES (Spanning the entire camera view)
-const starCoords = [
-    // The 7 Big Dipper Stars (Stretched across the screen)
-    new THREE.Vector3(60, 25, -20),   
-    new THREE.Vector3(45, -5, -20),    
-    new THREE.Vector3(15, -12, -20),   
-    new THREE.Vector3(3, 18, -20),   
-    new THREE.Vector3(-22, 13, -20),  
-    new THREE.Vector3(-45, 2, -20),  
-    new THREE.Vector3(-67, -17, -20),
-    
-    // 18 Decoy Stars pushed into the corners and empty edges
-    new THREE.Vector3(85, 40, -20),   // Top Right corner
-    new THREE.Vector3(75, -35, -20),  // Bottom Right corner
-    new THREE.Vector3(90, 5, -20),    // Far Right edge
-    new THREE.Vector3(-85, 40, -20),  // Top Left corner
-    new THREE.Vector3(-75, -40, -20), // Bottom Left corner
-    new THREE.Vector3(-88, -5, -20),  // Far Left edge
-    new THREE.Vector3(10, 45, -20),   // Top Center
-    new THREE.Vector3(25, -45, -20),  // Bottom Center
-    new THREE.Vector3(-40, 45, -20),  // Top Mid-Left
-    new THREE.Vector3(-30, -40, -20), // Bottom Mid-Left
-    new THREE.Vector3(40, 45, -20),   // Top Mid-Right
-    new THREE.Vector3(60, -30, -20),  // Bottom Mid-Right
-    new THREE.Vector3(-10, -35, -20), // Lower Middle
-    new THREE.Vector3(-60, 30, -20),  // Upper Left filler
-    new THREE.Vector3(-20, -20, -20), // Center Left filler
-    new THREE.Vector3(30, 10, -20),   // Center Right filler
-    new THREE.Vector3(-10, 5, -20),   // Center filler
-    new THREE.Vector3(-50, -25, -20)  // Lower Left filler
-];
+    for (let i = 0; i < particleCount * 3; i += 3) {
+        particlePositions[i] = (Math.random() - 0.5) * 400; // X width
+        particlePositions[i + 1] = (Math.random() - 0.5) * 400; // Y height
+        particlePositions[i + 2] = (Math.random() - 0.5) * 200 - 50; // True 3D Z depth spread
+    }
 
-// 3. RENDER SPRITES
-starCoords.forEach((pos, index) => {
-    // Using Sprites instead of spheres for the retro 2D look
-    const star = new THREE.Sprite(baseMaterial.clone());
-    star.position.copy(pos);
-    star.scale.set(4, 4, 1); // Size of the star
-    
-    star.userData.isDipper = index < 7;
-    // Randomize twinkling rhythm for each star
-    star.userData.twinkleSpeed = Math.random() * 0.003 + 0.0015; 
-    star.userData.twinkleOffset = Math.random() * Math.PI * 2;
-    
-    scene.add(star);
-    interactiveStars.push(star);
-});
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
 
-const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 });
-// 4. TWINKLING ANIMATION LOOP
-function animateConstellation() {
-    requestAnimationFrame(animateConstellation);
-    const time = Date.now();
-    
-    interactiveStars.forEach(star => {
-        // Only twinkle if it hasn't been locked in/selected
-        if (!selectedStars.includes(star)) {
-            // Tightened the math: 0.875 ± 0.125 keeps opacity between 0.75 and 1.0
-            star.material.opacity = 0.875 + 0.125 * Math.sin(time * star.userData.twinkleSpeed + star.userData.twinkleOffset);
-        }
+    const particleMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 1.4,
+        transparent: true,
+        opacity: 0.8
     });
-}
-animateConstellation();
 
-// 5. HOVER EFFECTS
-window.addEventListener('mousemove', (event) => {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-    
-    const intersects = raycaster.intersectObjects(interactiveStars);
-    document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
-});
-// 6. 2-STEP CLICK & COMPLETION LOGIC
-let activeAnchor = null; // Stores the first star you click
+    const backgroundField = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(backgroundField);
 
-window.addEventListener('click', (event) => {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-    
-    const intersects = raycaster.intersectObjects(interactiveStars);
+    // --- 3. RETRO PIXEL STAR TEXTURE ---
+    function createStarTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
 
-    if (intersects.length > 0) {
-        const clickedStar = intersects[0].object;
-        
-        // STEP 1: If no star is currently selected, make this one the anchor
-        if (activeAnchor === null) {
-            activeAnchor = clickedStar;
-            activeAnchor.material.color.setHex(0x00ffff); // Turn CYAN to show it is selected
-            activeAnchor.material.opacity = 1.0;
-        } 
-        // CANCEL: If you click the same star again, deselect it
-        else if (activeAnchor === clickedStar) {
-            // Revert to green if it's already part of a completed line, otherwise white
-            activeAnchor.material.color.setHex(selectedStars.includes(activeAnchor) ? 0x00ff00 : 0xffffff);
-            activeAnchor = null;
-        } 
-        // STEP 2: If an anchor is set and you click a DIFFERENT star, draw a line!
-        else {
-            const points = [activeAnchor.position, clickedStar.position];
-            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(lineGeo, lineMaterial);
-            scene.add(line);
-            drawnLines.push(line);
-            
-            // Add to selected array if they aren't already in it
-            if (!selectedStars.includes(activeAnchor)) selectedStars.push(activeAnchor);
-            if (!selectedStars.includes(clickedStar)) selectedStars.push(clickedStar);
+        ctx.clearRect(0, 0, 16, 16);
 
-            // Turn both stars neon green to confirm the connection
-            activeAnchor.material.color.setHex(0x00ff00);
-            clickedStar.material.color.setHex(0x00ff00);
-            activeAnchor.material.opacity = 1.0;
-            clickedStar.material.opacity = 1.0;
+        ctx.fillStyle = '#ffcc00';
+        ctx.fillRect(6, 6, 4, 4);
+        ctx.fillRect(7, 2, 2, 4);
+        ctx.fillRect(7, 10, 2, 4);
+        ctx.fillRect(2, 7, 4, 2);
+        ctx.fillRect(10, 7, 4, 2);
 
-            // Reset the anchor so the next click starts a brand new line
-            activeAnchor = null; 
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(7, 7, 2, 2);
 
-            // PUZZLE CHECK: The Big Dipper requires 7 connected stars and 7 lines (to close the pan loop)
-            if (selectedStars.length === 7 && drawnLines.length === 7) {
-                const isCorrect = selectedStars.every(star => star.userData.isDipper);
-                
-                if (isCorrect) {
-                    setTimeout(() => {
-                        alert("Signal detected: [32.92, -56°78, 8e32]. Cosmic waves resemble a humanoid figure. Where to go?");
-                        fetch('/api/game/advance-phase', { method: 'POST' })
-                            .then(res => console.log("Warping to Phase 3..."))
-                            .catch(err => console.error("Warp failed:", err));
-                    }, 500); 
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestFilter;
+        return texture;
+    }
+
+    const starTexture = createStarTexture();
+    const baseMaterial = new THREE.SpriteMaterial({
+        map: starTexture,
+        color: 0xffffff,
+        transparent: true
+    });
+
+    // --- 4. CONSTELLATION DATA (7 Real + 18 Decoys) ---
+    const interactiveStars = [];
+    const selectedStars = [];
+    const drawnLines = [];
+
+    const starCoords = [
+        // 7 True Big Dipper Stars
+        new THREE.Vector3(60, 25, -20),
+        new THREE.Vector3(45, -5, -20),
+        new THREE.Vector3(15, -12, -20),
+        new THREE.Vector3(3, 18, -20),
+        new THREE.Vector3(-22, 13, -20),
+        new THREE.Vector3(-45, 2, -20),
+        new THREE.Vector3(-67, -17, -20),
+
+        // 18 Decoys
+        new THREE.Vector3(85, 40, -20), new THREE.Vector3(75, -35, -20),
+        new THREE.Vector3(90, 5, -20), new THREE.Vector3(-85, 40, -20),
+        new THREE.Vector3(-75, -40, -20), new THREE.Vector3(-88, -5, -20),
+        new THREE.Vector3(10, 45, -20), new THREE.Vector3(25, -45, -20),
+        new THREE.Vector3(-40, 45, -20), new THREE.Vector3(-30, -40, -20),
+        new THREE.Vector3(40, 45, -20), new THREE.Vector3(60, -30, -20),
+        new THREE.Vector3(-10, -35, -20), new THREE.Vector3(-60, 30, -20),
+        new THREE.Vector3(-20, -20, -20), new THREE.Vector3(30, 10, -20),
+        new THREE.Vector3(-10, 5, -20), new THREE.Vector3(-50, -25, -20)
+    ];
+
+    starCoords.forEach((pos, index) => {
+        const star = new THREE.Sprite(baseMaterial.clone());
+        star.position.copy(pos);
+        star.scale.set(4, 4, 1);
+
+        star.userData.isDipper = index < 7;
+
+        // HIGHLIGHT THE BIG DIPPER IN CYAN FOR REFERENCE
+        if (index < 7) {
+            star.material.color.setHex(0x00ffff);
+        }
+
+        star.userData.twinkleSpeed = Math.random() * 0.003 + 0.0015;
+        star.userData.twinkleOffset = Math.random() * Math.PI * 2;
+
+        scene.add(star);
+        interactiveStars.push(star);
+    });
+
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 });
+
+    // --- 5. 3D ANIMATION & ROTATION LOOP ---
+    let activeAnchor = null;
+
+    function animateConstellation() {
+        requestAnimationFrame(animateConstellation);
+        const time = Date.now();
+
+        // Gentle 3D spherical rotation for the background depth field
+        backgroundField.rotation.x += 0.0003;
+        backgroundField.rotation.y += 0.0005;
+
+        // Twinkle interactive constellation stars
+        interactiveStars.forEach(star => {
+            if (!selectedStars.includes(star) && activeAnchor !== star) {
+                star.material.opacity = 0.875 + 0.125 * Math.sin(time * star.userData.twinkleSpeed + star.userData.twinkleOffset);
+            }
+        });
+
+        renderer.render(scene, camera);
+    }
+    animateConstellation();
+
+    // --- 6. INTERACTION & RAYCASTING ---
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    window.addEventListener('mousemove', (event) => {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(interactiveStars);
+        document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
+    });
+
+    window.addEventListener('click', (event) => {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(interactiveStars);
+
+        if (intersects.length > 0) {
+            const clickedStar = intersects[0].object;
+
+            // Deselect active anchor
+            if (activeAnchor === clickedStar) {
+                const isConnected = drawnLines.some(d => d.starA === clickedStar || d.starB === clickedStar);
+                activeAnchor.material.color.setHex(isConnected ? 0x00ff00 : (activeAnchor.userData.isDipper ? 0x00ffff : 0xffffff));
+                activeAnchor = null;
+            }
+            // Undo last line
+            else if (activeAnchor === null && drawnLines.length > 0 &&
+                (drawnLines[drawnLines.length - 1].starA === clickedStar || drawnLines[drawnLines.length - 1].starB === clickedStar)) {
+
+                const lastLineData = drawnLines.pop();
+                scene.remove(lastLineData.line);
+
+                const isStillConnected = (star) => drawnLines.some(d => d.starA === star || d.starB === star);
+
+                if (!isStillConnected(lastLineData.starA)) {
+                    lastLineData.starA.material.color.setHex(lastLineData.starA.userData.isDipper ? 0x00ffff : 0xffffff);
+                    const indexA = selectedStars.indexOf(lastLineData.starA);
+                    if (indexA > -1) selectedStars.splice(indexA, 1);
+                }
+                if (!isStillConnected(lastLineData.starB)) {
+                    lastLineData.starB.material.color.setHex(lastLineData.starB.userData.isDipper ? 0x00ffff : 0xffffff);
+                    const indexB = selectedStars.indexOf(lastLineData.starB);
+                    if (indexB > -1) selectedStars.splice(indexB, 1);
+                }
+            }
+            // Set anchor
+            else if (activeAnchor === null) {
+                activeAnchor = clickedStar;
+                activeAnchor.material.color.setHex(0xff00ff); // Magenta highlight
+                activeAnchor.material.opacity = 1.0;
+            }
+            // Connect line
+            else {
+                const alreadyConnected = drawnLines.some(d =>
+                    (d.starA === activeAnchor && d.starB === clickedStar) ||
+                    (d.starB === activeAnchor && d.starA === clickedStar)
+                );
+
+                if (!alreadyConnected) {
+                    const points = [activeAnchor.position, clickedStar.position];
+                    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+                    const line = new THREE.Line(lineGeo, lineMaterial);
+                    scene.add(line);
+
+                    drawnLines.push({ line: line, starA: activeAnchor, starB: clickedStar });
+
+                    if (!selectedStars.includes(activeAnchor)) selectedStars.push(activeAnchor);
+                    if (!selectedStars.includes(clickedStar)) selectedStars.push(clickedStar);
+
+                    activeAnchor.material.color.setHex(0x00ff00);
+                    clickedStar.material.color.setHex(0x00ff00);
+                    activeAnchor.material.opacity = 1.0;
+                    clickedStar.material.opacity = 1.0;
+
+                    activeAnchor = null;
+
+                    // --- PUZZLE COMPLETION CHECK ---
+                    if (selectedStars.length === 7) {
+                        const isCorrect = selectedStars.every(star => star.userData.isDipper);
+                        if (isCorrect) {
+                            setTimeout(() => {
+                                alert("Signal detected: [32.92, -56°78, 8e32]. Cosmic waves resemble a humanoid figure. Where to go?");
+                                fetch('/api/game/advance-phase', { method: 'POST' })
+                                    .then(res => console.log("Warping to Phase 3..."))
+                                    .catch(err => console.error("Warp failed:", err));
+                            }, 500);
+                        }
+                    }
                 } else {
-                    console.log("Incorrect constellation detected.");
+                    activeAnchor.material.color.setHex(activeAnchor.userData.isDipper ? 0x00ffff : 0xffffff);
+                    activeAnchor = null;
                 }
             }
         }
-    }
-});
-const actionMenu = document.getElementById('action-menu');
-const btnUse = document.getElementById('btn-use');
-const btnDrop = document.getElementById('btn-drop');
-const deathScreen = document.getElementById('death-screen');
-
-let selectedItem = null;
-
-// 1. Show Use/Drop menu when an item is clicked
-document.querySelectorAll('.inv-item').forEach(button => {
-    button.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevents the document click listener from immediately hiding the menu
-        
-        selectedItem = e.target.getAttribute('data-item');
-        
-        // Position the menu slightly above the clicked item
-        const rect = e.target.getBoundingClientRect();
-        actionMenu.style.left = `${rect.left}px`;
-        actionMenu.style.top = `${rect.top - 90}px`; 
-        
-        actionMenu.classList.remove('hidden');
     });
-});
 
-// 2. Hide menu if the player clicks anywhere else on the screen
-document.addEventListener('click', () => {
-    actionMenu.classList.add('hidden');
-});
-
-// 3. Handle the "USE" action
-btnUse.addEventListener('click', () => {
-    if (selectedItem === 'poison') {
-        // Trigger the instant death trap
-        deathScreen.classList.remove('hidden');
-    } else if (selectedItem === 'book') {
-        console.log("Book logic incoming...");
-        // We will wire up the binary puzzle here next
-    } else {
-        console.log(`System cannot process: ${selectedItem}`);
+    // --- 7. UI EVENT LISTENERS ---
+    const deathScreen = document.getElementById('death-screen');
+    const btnPoison = document.getElementById('btn-poison');
+    if (btnPoison) {
+        btnPoison.addEventListener('click', () => {
+            if (deathScreen) deathScreen.classList.remove('hidden');
+        });
     }
-});
-
-// 4. Handle the "DROP" action (Dismisses the menu)
-btnDrop.addEventListener('click', () => {
-    actionMenu.classList.add('hidden');
 });
