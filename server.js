@@ -1,3 +1,6 @@
+const dns = require('node:dns');
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -13,6 +16,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // --- DATABASE CONNECTION ---
+console.log("Checking URI:", process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI)
         .then(() => console.log("MongoDB Connected to Asteria Core"))
         .catch((err) => console.log("Database connection failed:", err));
