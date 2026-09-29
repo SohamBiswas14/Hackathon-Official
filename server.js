@@ -16,7 +16,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // --- DATABASE CONNECTION ---
-console.log("Checking URI:", process.env.MONGO_URI);
 mongoose.connect(process.env.MONGO_URI)
         .then(() => console.log("MongoDB Connected to Asteria Core"))
         .catch((err) => console.log("Database connection failed:", err));
