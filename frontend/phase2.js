@@ -1,3 +1,5 @@
+const GAME_API_BASE = 'https://probable-parakeet-r76x4xqjp979hw49-3000.app.github.dev';
+
 window.addEventListener('DOMContentLoaded', () => {
     // --- 1. SCENE, CAMERA & RENDERER SETUP ---
     const scene = new THREE.Scene();
@@ -222,11 +224,31 @@ window.addEventListener('DOMContentLoaded', () => {
                     if (selectedStars.length === 7) {
                         const isCorrect = selectedStars.every(star => star.userData.isDipper);
                         if (isCorrect) {
-                            setTimeout(() => {
-                                alert("Signal detected: [32.92, -56°78, 8e32]. Cosmic waves resemble a humanoid figure. Where to go?");
-                                fetch('/api/game/advance-phase', { method: 'POST' })
-                                    .then(res => console.log("Warping to Phase 3..."))
-                                    .catch(err => console.error("Warp failed:", err));
+                            setTimeout(async () => {
+                                try {
+                                    const player = JSON.parse(sessionStorage.getItem('asteria_player') || 'null');
+                                    if (!player?.username) throw new Error('Sign in again to save Phase 2 progress.');
+
+                                    while (Number(player.currentLevel) < 3) {
+                                        const response = await fetch(`${GAME_API_BASE}/api/game/advance-phase`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ username: player.username })
+                                        });
+                                        const result = await response.json();
+                                        if (!response.ok) throw new Error(result.error || 'Phase progress could not be saved.');
+
+                                        player.currentLevel = Number(result.newLevel) || Number(player.currentLevel) + 1;
+                                        player.currentLocation = result.newLocation || 'System Aurora';
+                                    }
+
+                                    sessionStorage.setItem('asteria_player', JSON.stringify(player));
+                                    alert('Signal detected: [32.92, -56°78, 8e32]. System Aurora is unlocked — warping to Phase 3.');
+                                    window.location.href = 'index.html';
+                                } catch (error) {
+                                    console.error('Phase 2 progress save failed:', error);
+                                    alert(error.message || 'Warp failed. Please retry the constellation puzzle.');
+                                }
                             }, 500);
                         }
                     }
