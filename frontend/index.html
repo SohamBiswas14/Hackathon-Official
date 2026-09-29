@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -39,28 +39,71 @@
             </div>
             <button type="submit" class="neon-btn">[ INITIATE_WARP ]</button>
           </form>
+          <p class="toggle-text">
+            NEW RECRUIT?
+            <button type="button" id="show-signup" class="toggle-link">[ SIGN UP ]</button>
+          </p>
         </div>
 
         <div id="signup-section" class="hidden">
           <form id="signup-form">
             <div class="input-group">
-              <label>> NEW_RECRUIT_ID_</label>
-              <input type="text" autocomplete="off" required />
+              <label>> RECRUIT_ID_</label>
+              <input type="text" autocomplete="username" required />
             </div>
             <div class="input-group">
-              <label>> ASSIGN_PASSKEY_</label>
-              <input type="password" required />
+              <label>> PASSKEY_</label>
+              <input type="password" autocomplete="new-password" required />
             </div>
-            <button type="submit" class="neon-btn">[ REGISTER_RECRUIT ]</button>
+            <button type="submit" class="neon-btn">[ CREATE_RECRUIT ]</button>
           </form>
           <p class="toggle-text">
-            EXISTING DATA?
-            <span id="show-login" class="toggle-link">[ AUTHENTICATE ]</span>
+            EXISTING RECRUIT?
+            <button type="button" id="show-login" class="toggle-link">[ LOGIN ]</button>
           </p>
         </div>
       </main>
     </div>
 
     <script src="script.js"></script>
+    <!-- Mission Control Pop-up -->
+    <div id="mission-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Mission Control established:</h2>
+        <p>Greetings, Agent <span class="agent-name"></span>,</p>
+        <p>
+          Your mission, should you choose to accept it, involves Neutralizing a
+          rogue syndicate, Cosmo Polo, and intercepting a catastrophic weapon
+          designed to destroy 'Asteria'.
+        </p>
+        <p>
+          Cosmo Polo travels across the realms through dimensional rifts. To
+          catch him, you would need more than your best and utmost vigilance. As
+          always, should you or any of your team be caught or killed, Mission
+          Control will disavow all knowledge of your actions.
+        </p>
+        <p>
+          Good luck, Agent <span class="agent-name"></span>. This message will
+          self-destruct in five seconds.
+        </p>
+
+        <div class="modal-actions">
+          <button id="accept-btn" class="neon-btn">[ ACCEPT ]</button>
+          <button id="decline-btn" class="neon-btn decline-btn">
+            [ DECLINE ]
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decline Screen -->
+    <div id="decline-screen" class="hidden">
+      <h1>🫩</h1>
+      <p>
+        We developers look like this after 30 hours of sleep deficiency and a
+        diet of coke and chips while avoiding any form of social contact and you
+        really chose to decline the mission???
+      </p>
+    </div>
   </body>
 </html>

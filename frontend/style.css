@@ -7,7 +7,7 @@
 body {
   background-color: #050505;
   color: #0f0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -54,7 +54,7 @@ input {
   border: none;
   border-bottom: 2px solid #0a0;
   color: #0f0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 1.2rem;
   padding: 0.5rem 0;
   outline: none;
@@ -69,7 +69,7 @@ input:focus {
   width: 100%;
   background: transparent;
   color: #0f0;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   font-size: 1.2rem;
   border: 1px solid #0f0;
   padding: 1rem;
@@ -106,11 +106,98 @@ input:focus {
 }
 
 .toggle-link {
+  background: transparent;
+  border: 0;
   color: #0a0;
   cursor: pointer;
+  font: inherit;
 }
 
 .toggle-link:hover {
   color: #0f0;
   text-shadow: 0 0 5px #0f0;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-content {
+  border: 1px solid #0f0;
+  padding: 2rem;
+  width: 90%;
+  max-width: 600px;
+  background: #050505;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.modal-content h2 {
+  color: #0f0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.modal-content p {
+  color: #0a0;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Specific styling for the decline button to make it look dangerous */
+.decline-btn {
+  border-color: #f00;
+  color: #f00;
+}
+
+.decline-btn:hover {
+  background: #f00;
+  color: #000;
+  box-shadow: 0 0 20px #f00;
+}
+
+/* Decline Screen Styles */
+#decline-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+  text-align: center;
+  padding: 2rem;
+}
+
+#decline-screen h1 {
+  font-size: 8rem;
+  margin-bottom: 1rem;
+}
+
+#decline-screen p {
+  font-size: 1.5rem;
+  color: #fff;
+  max-width: 800px;
+  line-height: 1.6;
+  font-family: sans-serif; /* Breaks the terminal theme for comedic effect */
 }

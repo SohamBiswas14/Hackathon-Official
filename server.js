@@ -6,58 +6,125 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const { randomBytes, scrypt, timingSafeEqual } = require('node:crypto');
+const { promisify } = require('node:util');
 const User = require('./models/User');
 
+const scryptAsync = promisify(scrypt);
 const app = express();
 
-app.use(cors({ origin: "*" })); 
+async function hashPassword(password) {
+  const salt = randomBytes(16).toString('hex');
+  const hash = await scryptAsync(password, salt, 64);
+  return `scrypt$${salt}$${hash.toString('hex')}`;
+}
+
+async function verifyPassword(password, storedPassword) {
+  if (typeof storedPassword !== 'string') {
+    return false;
+  }
+
+  if (!storedPassword.startsWith('scrypt$')) {
+    return storedPassword === password;
+  }
+
+  const [, salt, storedHash] = storedPassword.split('$');
+  if (!salt || !storedHash) {
+    return false;
+  }
+
+  const expectedHash = Buffer.from(storedHash, 'hex');
+  const actualHash = await scryptAsync(password, salt, expectedHash.length);
+  return expectedHash.length > 0 && timingSafeEqual(actualHash, expectedHash);
+}
+
+function serializePlayer(player) {
+  return {
+    id: player._id,
+    username: player.username,
+    currentLevel: player.currentLevel,
+    discoveredTruth: player.discoveredTruth,
+  };
+}
+
+app.use(cors({ origin: '*' }));
 app.use(express.json());
-// This line automatically hosts your frontend folder!
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// --- DATABASE CONNECTION ---
-mongoose.connect(process.env.MONGO_URI)
-        .then(() => console.log("MongoDB Connected to Asteria Core"))
-        .catch((err) => console.log("Database connection failed:", err));
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB Connected to Asteria Core'))
+  .catch((error) => console.log('Database connection failed:', error));
 
-// --- TEST ROUTE ---
 app.get('/api/status', (req, res) => {
-        res.json({ status: "Asteria Backend Online" });
+  res.json({ status: 'Asteria Backend Online' });
 });
 
-// --- API ROUTE: START OR LOAD GAME ---
-app.post('/api/start', async (req, res) => {
-        try {
-                const { username } = req.body;
+app.post('/api/signup', async (req, res) => {
+  try {
+    const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
 
-                if (!username) {
-                        return res.status(400).json({ error: "Username is required." });
-                }
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and passkey are required.' });
+    }
 
-                // 1. Check if this player already exists
-                let player = await User.findOne({ username: username });
+    const existingPlayer = await User.findOne({ username });
+    if (existingPlayer) {
+      return res.status(409).json({ error: 'Recruit ID already exists. Initiate login instead.' });
+    }
 
-                if (player) {
-                        return res.json({
-                                message: "Welcome back, Explorer.",
-                                player: player,
-                                isNew: false
-                        });
-                } else {
-                        // 2. Player does not exist. Create a new one!
-                        player = new User({ username: username });
-                        await player.save();
+    const player = await User.create({
+      username,
+      password: await hashPassword(password),
+    });
 
-                        return res.json({
-                                message: "New terminal connection established.",
-                                player: player,
-                                isNew: true
-                        });
-                }
-        } catch (error) {
-                console.error(error);
-                res.status(500).json({ error: "Server singularity error. Try again." });
-        }
+    return res.status(201).json({
+      message: 'New terminal connection established.',
+      player: serializePlayer(player),
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ error: 'Recruit ID already exists. Initiate login instead.' });
+    }
+
+    console.error(error);
+    return res.status(500).json({ error: 'Server singularity error. Try again.' });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const username = typeof req.body.username === 'string' ? req.body.username.trim() : '';
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and passkey are required.' });
+    }
+
+    const player = await User.findOne({ username });
+
+    if (!player) {
+      return res.status(404).json({ error: 'Agent not found. Verify recruit ID.' });
+    }
+
+    if (!(await verifyPassword(password, player.password))) {
+      return res.status(401).json({ error: 'Invalid passkey. Access denied.' });
+    }
+
+    if (!player.password.startsWith('scrypt$')) {
+      player.password = await hashPassword(password);
+      await player.save();
+    }
+
+    return res.json({
+      message: 'Welcome back, Explorer.',
+      player: serializePlayer(player),
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server singularity error. Try again.' });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
