@@ -9,6 +9,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/game-tools.css" />
   </head>
 
   <body>
@@ -71,6 +72,23 @@
     <div id="aurora-lock">
         🔒 PHASE 3 LOCKED
     </div>
+
+    <div class="phase3-inventory-toolbar">
+      <span id="phase3-inventory-count">FIELD INVENTORY</span>
+      <button id="phase3-inventory-toggle" type="button" aria-expanded="false" aria-controls="phase3-inventory">[ OPEN INVENTORY ]</button>
+    </div>
+
+    <section id="phase3-inventory" class="phase3-inventory hidden" aria-label="Phase 3 inventory">
+      <h3>FIELD INVENTORY</h3>
+      <div class="phase3-inventory-layout">
+        <div id="phase3-inventory-items" class="phase3-inventory-items" aria-label="Inventory items"></div>
+        <div class="phase3-inventory-detail" aria-live="polite">
+          <h4 id="phase3-item-title">Select an item</h4>
+          <p id="phase3-item-description">Your carried equipment and field notes appear here.</p>
+          <button id="phase3-item-action" class="hidden" type="button"></button>
+        </div>
+      </div>
+    </section>
 
     <div id="solar-system">
 
@@ -172,6 +190,8 @@
                 max="200"
                 value="100"
             >
+            <output id="brightness-value" for="brightness">100%</output>
+            <input id="brightness-number" type="number" min="0" max="200" step="1" value="100" aria-label="Brightness percentage">
         </label>
 
         <label>
@@ -183,6 +203,8 @@
                 max="200"
                 value="100"
             >
+              <output id="contrast-value" for="contrast">100%</output>
+            <input id="contrast-number" type="number" min="0" max="200" step="1" value="100" aria-label="Contrast percentage">
         </label>
 
         <label>
@@ -194,6 +216,8 @@
                 max="360"
                 value="0"
             >
+              <output id="hue-value" for="hue">0°</output>
+            <input id="hue-number" type="number" min="0" max="360" step="1" value="0" aria-label="Hue in degrees">
         </label>
 
     </div>
@@ -202,6 +226,7 @@
       <strong>SYSTEM AURORA CLEARED</strong>
       <p id="phase3-save-status">Saving mission progress…</p>
       <button id="retry-phase-save" class="neon-btn hidden" type="button">[ RETRY PROGRESS SAVE ]</button>
+      <button id="continue-phase-4" class="neon-btn hidden" type="button">[ CONTINUE TO PHASE 4 ]</button>
     </div>
 
   </section>
@@ -246,5 +271,6 @@
     </div>
     <script src="script.js"></script>
     <script src="phase3.js"></script>
+    <script src="/game-tools.js"></script>
   </body>
 </html>

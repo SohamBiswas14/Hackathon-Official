@@ -1,5 +1,3 @@
-const GAME_API_BASE = 'https://probable-parakeet-r76x4xqjp979hw49-3000.app.github.dev';
-
 window.addEventListener('DOMContentLoaded', () => {
     // --- 1. SCENE, CAMERA & RENDERER SETUP ---
     const scene = new THREE.Scene();
@@ -154,6 +152,8 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('click', (event) => {
+        if (event.target.closest('button, #tool-dialog')) return;
+
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
@@ -230,7 +230,7 @@ window.addEventListener('DOMContentLoaded', () => {
                                     if (!player?.username) throw new Error('Sign in again to save Phase 2 progress.');
 
                                     while (Number(player.currentLevel) < 3) {
-                                        const response = await fetch(`${GAME_API_BASE}/api/game/advance-phase`, {
+                                        const response = await fetch('/api/game/advance-phase', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ username: player.username })
@@ -263,6 +263,69 @@ window.addEventListener('DOMContentLoaded', () => {
     // --- 7. UI EVENT LISTENERS ---
     const deathScreen = document.getElementById('death-screen');
     const btnPoison = document.getElementById('btn-poison');
+    const toolDialog = document.getElementById('tool-dialog');
+    const toolDialogTitle = document.getElementById('tool-dialog-title');
+    const toolDialogMessage = document.getElementById('tool-dialog-message');
+    const toolDialogAction = document.getElementById('tool-dialog-action');
+
+    function closeToolDialog() {
+        toolDialog.classList.add('hidden');
+    }
+
+    function openToolDialog(title, message, actionLabel, action) {
+        toolDialogTitle.textContent = title;
+        toolDialogMessage.textContent = message;
+        toolDialogAction.textContent = actionLabel || '';
+        toolDialogAction.classList.toggle('hidden', !action);
+        toolDialogAction.onclick = action || null;
+        toolDialog.classList.remove('hidden');
+        document.getElementById('tool-dialog-close').focus();
+    }
+
+    function resetConstellation() {
+        drawnLines.forEach(({ line }) => scene.remove(line));
+        drawnLines.length = 0;
+        selectedStars.length = 0;
+        activeAnchor = null;
+        interactiveStars.forEach((star) => {
+            star.material.color.setHex(star.userData.isDipper ? 0x00ffff : 0xffffff);
+            star.material.opacity = 1;
+        });
+    }
+
+    document.getElementById('btn-settings').addEventListener('click', () => {
+        openToolDialog('Settings', 'Reset the constellation or close this panel to resume.', '[ RESET CONSTELLATION ]', () => {
+            resetConstellation();
+            closeToolDialog();
+        });
+    });
+
+    document.getElementById('tool-dialog-close').addEventListener('click', closeToolDialog);
+    toolDialog.addEventListener('click', (event) => {
+        if (event.target === toolDialog) closeToolDialog();
+    });
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeToolDialog();
+    });
+
+    const inventoryItems = {
+        'btn-map': ['Navigation Map', 'You are on Planet Sonic Enigma. Connect the seven cyan stars to complete this phase.'],
+        'btn-book': ['Great Library Book', 'The Big Dipper is the seven-star constellation highlighted in cyan. Avoid the white decoy stars.'],
+        'btn-radio': ['Radio Tuner', 'The signal is stable. Link each distinct cyan star; click a connected endpoint to undo the last link.'],
+        'btn-hacking': ['Hacking System', 'Clear the current constellation and start the connection sequence again?', '[ RESET CONSTELLATION ]'],
+        'btn-hints': ['Hints', 'Choose only the seven cyan stars. The constellation is complete once all seven are connected.'],
+    };
+
+    Object.entries(inventoryItems).forEach(([buttonId, [title, message, actionLabel]]) => {
+        document.getElementById(buttonId).addEventListener('click', () => {
+            const action = actionLabel ? () => {
+                resetConstellation();
+                closeToolDialog();
+            } : null;
+            openToolDialog(title, message, actionLabel, action);
+        });
+    });
+
     if (btnPoison) {
         btnPoison.addEventListener('click', () => {
             if (deathScreen) deathScreen.classList.remove('hidden');
