@@ -8,16 +8,14 @@ body {
   background-color: #050505;
   color: #0f0;
   font-family: "Share Tech Mono", monospace;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .terminal-container {
   width: 90%;
   max-width: 500px;
+  margin: 10vh auto;
   border: 1px solid #0f0;
   padding: 2rem;
   background: rgba(0, 20, 0, 0.8);
@@ -201,6 +199,7 @@ input:focus {
   max-width: 800px;
   line-height: 1.6;
   font-family: sans-serif; /* Breaks the terminal theme for comedic effect */
+}
 
 /* =================================
    PHASE 3 - SYSTEM AURORA
@@ -335,6 +334,8 @@ input:focus {
     transition: 0.2s;
 
     border: 1px solid #8bdcff;
+    padding: 0;
+    appearance: none;
 }
 
 
@@ -344,6 +345,16 @@ input:focus {
     box-shadow:
         0 0 15px #00c8ff,
         0 0 30px #0088ff;
+}
+
+.planet:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+.planet.scanned {
+  border-color: #00ffcc;
+  box-shadow: 0 0 16px #00ffcc;
 }
 
 
@@ -479,6 +490,39 @@ input:focus {
     cursor: pointer;
 }
 
+.knob-control input:disabled,
+#timeInput:disabled,
+#nasa-controls input:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.phase-message {
+  margin: 18px auto;
+  color: #8feaff;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.clue-list {
+  max-width: 780px;
+  margin: 12px auto 28px;
+  padding-left: 24px;
+  color: #00ffcc;
+  line-height: 1.8;
+}
+
+#phase3-complete {
+  padding: 20px;
+  border: 1px solid #00ffcc;
+  background: rgba(0, 255, 204, 0.06);
+}
+
+#phase3-complete strong {
+  letter-spacing: 3px;
+  color: #00ffcc;
+}
+
 
 .knob-control span {
     display: block;
@@ -600,4 +644,5 @@ input:focus {
 #nasa-controls input {
     width: 180px;
     cursor: pointer;
+}
 

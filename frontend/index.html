@@ -64,7 +64,7 @@
         </div>
       </main>
     </div>
-<section id="phase-3">
+  <section id="phase-3" class="hidden">
 
     <h2>SYSTEM AURORA</h2>
 
@@ -77,11 +77,14 @@
         <div class="binary-star star-one"></div>
         <div class="binary-star star-two"></div>
 
-        <div class="planet planet-1" data-planet="Planet Alpha"></div>
-        <div class="planet planet-2" data-planet="Planet Beta"></div>
-        <div class="planet planet-3" data-planet="Planet Gamma"></div>
+        <button class="planet planet-1" type="button" data-planet="alpha" aria-label="Scan Planet Alpha"></button>
+        <button class="planet planet-2" type="button" data-planet="beta" aria-label="Scan Planet Beta"></button>
+        <button class="planet planet-3" type="button" data-planet="gamma" aria-label="Scan Planet Gamma"></button>
 
     </div>
+
+    <p id="aurora-message" class="phase-message" aria-live="polite">Scan all three planets to collect the signal fragments.</p>
+    <ul id="aurora-clues" class="clue-list" aria-live="polite"></ul>
 
     <div id="radio-decoder">
 
@@ -134,20 +137,19 @@
         <button id="decodeTime">
             DECODE TIME
         </button>
+        <p id="time-code-message" class="phase-message" aria-live="polite"></p>
 
     </div>
 
-</section>
-</div>
+  </section>
 
-</section>
-
-<!-- NASA CLUE D -->
-<section id="nasa-clue">
+  <!-- NASA CLUE D -->
+  <section id="nasa-clue" class="hidden">
 
     <h2>NASA ANOMALY</h2>
 
     <p id="nasa-status">LOADING NASA DATA...</p>
+    <p id="nasa-clue-message" class="phase-message" aria-live="polite">Decode the radio signal to reveal the anomaly coordinates.</p>
 
     <div id="nasa-display">
 
@@ -196,8 +198,13 @@
 
     </div>
 
-</section>
-    <script src="script.js"></script>
+    <div id="phase3-complete" class="phase-message hidden" role="status" aria-live="polite">
+      <strong>SYSTEM AURORA CLEARED</strong>
+      <p id="phase3-save-status">Saving mission progress…</p>
+      <button id="retry-phase-save" class="neon-btn hidden" type="button">[ RETRY PROGRESS SAVE ]</button>
+    </div>
+
+  </section>
     <!-- Mission Control Pop-up -->
     <div id="mission-modal" class="modal hidden">
       <div class="modal-content">
@@ -237,5 +244,7 @@
         really chose to decline the mission???
       </p>
     </div>
+    <script src="script.js"></script>
+    <script src="phase3.js"></script>
   </body>
 </html>

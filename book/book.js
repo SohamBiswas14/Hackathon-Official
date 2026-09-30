@@ -344,25 +344,45 @@ bookReopenBtn.addEventListener('click', () => {
 
 async function routeToPhase(targetPhaseNumber, destinationName) {
   const rawUser = sessionStorage.getItem('asteria_player');
-  if (rawUser) {
-    try {
-      const player = JSON.parse(rawUser);
-      await fetch(`${BASE_URL}/api/game/advance-phase`, {
+  if (!rawUser) {
+    showToast('SIGN IN REQUIRED TO SAVE MISSION PROGRESS.');
+    return;
+  }
+
+  try {
+    const player = JSON.parse(rawUser);
+
+    if (targetPhaseNumber === 3 && Number(player.currentLevel) < 3) {
+      if (Number(player.currentLevel) !== 2) {
+        showToast('COMPLETE THE PREVIOUS PHASES BEFORE SYSTEM AURORA.');
+        return;
+      }
+
+      const response = await fetch(`${BASE_URL}/api/game/advance-phase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: player.username,
-          targetPhase: targetPhaseNumber
         })
       });
-      player.currentLevel = targetPhaseNumber;
-      player.currentLocation = destinationName;
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not save phase progression.');
+      player.currentLevel = Number(result.newLevel) || targetPhaseNumber;
+      player.currentLocation = result.newLocation || destinationName;
       sessionStorage.setItem('asteria_player', JSON.stringify(player));
-    } catch (e) {
-      console.warn('Failed to advance phase on backend:', e);
     }
+  } catch (error) {
+    console.warn('Failed to advance phase on backend:', error);
+    showToast(error.message || 'MISSION PROGRESS COULD NOT BE SAVED.');
+    return;
   }
+
   showToast(`DIRECTING TO PHASE ${targetPhaseNumber}: ${destinationName.toUpperCase()}...`);
+
+  if (targetPhaseNumber === 3) {
+    window.location.href = '../frontend/index.html';
+  }
 }
 
 document.getElementById('opt-aurora').addEventListener('click', async () => {
