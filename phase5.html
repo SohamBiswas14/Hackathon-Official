@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050505">
+    <title>Asteria - The Singularity</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            font-family: "Share Tech Mono", monospace;
+            background: #050505;
+            color: #b8f7ff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: #050505;
+        }
+
+        .singularity-scene {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.34;
+        }
+
+        .singularity-wash {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.92), rgba(2, 17, 24, 0.62), rgba(0, 0, 0, 0.9));
+        }
+
+        main {
+            position: relative;
+            display: grid;
+            min-height: 100vh;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .arrival {
+            width: min(100%, 760px);
+            padding: clamp(24px, 6vw, 64px);
+            border: 1px solid rgba(0, 243, 255, 0.72);
+            background: rgba(0, 0, 0, 0.82);
+            box-shadow: 0 0 48px rgba(0, 243, 255, 0.14);
+            text-align: center;
+        }
+
+        .eyebrow {
+            margin: 0 0 18px;
+            color: #00f3ff;
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+        }
+
+        h1 {
+            margin: 0;
+            color: #fff;
+            font-size: clamp(2.2rem, 10vw, 5rem);
+            line-height: 1.05;
+        }
+
+        .message {
+            max-width: 520px;
+            margin: 24px auto 0;
+            color: #b8f7ff;
+            line-height: 1.7;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 32px;
+            padding: 10px 14px;
+            border: 1px solid rgba(0, 243, 255, 0.45);
+            color: #00f3ff;
+            font-size: 0.8rem;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/game-tools.css">
+</head>
+<body>
+    <img class="singularity-scene" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg/400px-Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg" alt="Pillars of Creation nebula">
+    <div class="singularity-wash" aria-hidden="true"></div>
+    <main>
+        <section class="arrival" aria-labelledby="singularity-title">
+            <p class="eyebrow">PHASE 05 / FINAL TRANSMISSION</p>
+            <h1 id="singularity-title">THE SINGULARITY</h1>
+            <p class="message">Warp sequence complete. The Singularity is now active, and your mission data has been synchronized.</p>
+            <p class="status">SYSTEM STATUS: PHASE 5 ACTIVE</p>
+        </section>
+    </main>
+    <script src="/game-tools.js"></script>
+</body>
+</html>

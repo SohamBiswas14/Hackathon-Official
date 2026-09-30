@@ -27,11 +27,22 @@ const noiseKnob = document.getElementById('noiseKnob');
 const phase3Complete = document.getElementById('phase3-complete');
 const phase3SaveStatus = document.getElementById('phase3-save-status');
 const retryPhaseSave = document.getElementById('retry-phase-save');
+const continuePhase4 = document.getElementById('continue-phase-4');
+const inventoryToggle = document.getElementById('phase3-inventory-toggle');
+const inventoryPanel = document.getElementById('phase3-inventory');
+const inventoryCount = document.getElementById('phase3-inventory-count');
+const inventoryItems = document.getElementById('phase3-inventory-items');
+const inventoryItemTitle = document.getElementById('phase3-item-title');
+const inventoryItemDescription = document.getElementById('phase3-item-description');
+const inventoryItemAction = document.getElementById('phase3-item-action');
 const nasaSection = document.getElementById('nasa-clue');
 const nasaClueMessage = document.getElementById('nasa-clue-message');
 const brightnessSlider = document.getElementById('brightness');
 const contrastSlider = document.getElementById('contrast');
 const hueSlider = document.getElementById('hue');
+const brightnessNumber = document.getElementById('brightness-number');
+const contrastNumber = document.getElementById('contrast-number');
+const hueNumber = document.getElementById('hue-number');
 const inputCanvas = document.getElementById('inputWave');
 const outputCanvas = document.getElementById('outputWave');
 
@@ -40,6 +51,51 @@ let phase3Progress = null;
 let waveAnimationStarted = false;
 let isSavingPhase = false;
 
+const defaultInventory = ['Map', 'Book of the Great Library', 'Radio Signal Tuner', 'Hacking System', 'Poison', 'Hints'];
+const inventoryCatalog = {
+  map: {
+    title: 'Map',
+    description: 'System Aurora is Phase 3. Scan the three planets, decode the radio signal, then calibrate the anomaly.',
+    actionLabel: 'VIEW PLANETS',
+    action: () => document.getElementById('solar-system').scrollIntoView({ behavior: 'smooth', block: 'center' }),
+  },
+  'book of the great library': {
+    title: 'Book of the Great Library',
+    description: 'Recovered planetary fragments are listed in the Aurora clues. Combine the fragments in hour : noise : amplitude order.',
+    actionLabel: 'REVIEW CLUES',
+    action: () => auroraClues.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+  },
+  'radio signal tuner': {
+    title: 'Radio Signal Tuner',
+    description: 'Use the planetary fragments to set the radio controls, then decode the time code to enable tuning.',
+    actionLabel: 'OPEN DECODER',
+    action: () => {
+      document.getElementById('radio-decoder').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      pitchKnob.focus();
+    },
+  },
+  'hacking system': {
+    title: 'Hacking System',
+    description: 'Decrypt the remaining planetary signal fragments and make them available in the clue list.',
+    actionLabel: 'DECRYPT FRAGMENTS',
+    action: () => {
+      if (!phase3Progress) return;
+      phase3Progress.planets = Object.keys(auroraPlanets);
+      savePhase3Progress();
+      refreshAuroraProgress();
+      inventoryItemDescription.textContent = 'All planetary fragments have been decrypted.';
+    },
+  },
+  poison: {
+    title: 'Poison',
+    description: 'A lethal toxin. This item cannot be safely used during the Aurora mission.',
+  },
+  hints: {
+    title: 'Hints',
+    description: 'Scan all three planets. Enter 08:27 for the time code, tune pitch/noise/amplitude to 8/2/7, then set the anomaly to 125% brightness, 150% contrast, and 210° hue.',
+  },
+};
+
 function getCurrentPlayer() {
   try {
     return JSON.parse(sessionStorage.getItem('asteria_player') || 'null');
@@ -47,6 +103,52 @@ function getCurrentPlayer() {
     return null;
   }
 }
+
+function selectInventoryItem(item, button) {
+  const details = inventoryCatalog[String(item).toLowerCase()] || {
+    title: String(item),
+    description: 'No field notes are available for this item.',
+  };
+
+  inventoryItems.querySelectorAll('.phase3-inventory-item').forEach((itemButton) => {
+    itemButton.setAttribute('aria-pressed', String(itemButton === button));
+  });
+  inventoryItemTitle.textContent = details.title;
+  inventoryItemDescription.textContent = details.description;
+  inventoryItemAction.textContent = details.actionLabel || '';
+  inventoryItemAction.classList.toggle('hidden', !details.action);
+  inventoryItemAction.onclick = details.action || null;
+}
+
+function renderInventory(player) {
+  const items = Array.isArray(player.inventory) ? player.inventory : defaultInventory;
+  inventoryCount.textContent = `FIELD INVENTORY / ${items.length}`;
+  inventoryItems.replaceChildren();
+
+  items.forEach((item) => {
+    const button = document.createElement('button');
+    button.className = 'phase3-inventory-item';
+    button.type = 'button';
+    button.textContent = item;
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => selectInventoryItem(item, button));
+    inventoryItems.appendChild(button);
+  });
+
+  if (items.length > 0) {
+    selectInventoryItem(items[0], inventoryItems.firstElementChild);
+  } else {
+    inventoryItemTitle.textContent = 'Inventory empty';
+    inventoryItemDescription.textContent = 'No items are currently assigned to this profile.';
+  }
+}
+
+inventoryToggle.addEventListener('click', () => {
+  const isOpening = inventoryPanel.classList.toggle('hidden') === false;
+  inventoryToggle.setAttribute('aria-expanded', String(isOpening));
+  inventoryToggle.textContent = isOpening ? '[ CLOSE INVENTORY ]' : '[ OPEN INVENTORY ]';
+  if (isOpening) inventoryPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
 
 function createEmptyProgress() {
   return { planets: [], timeDecoded: false, radioDecoded: false, completed: false };
@@ -86,7 +188,7 @@ function setControlsEnabled(enabled) {
   [pitchKnob, amplitudeKnob, noiseKnob, timeInput, decodeTimeButton].forEach((control) => {
     control.disabled = !enabled;
   });
-  [brightnessSlider, contrastSlider, hueSlider].forEach((control) => {
+  [brightnessSlider, contrastSlider, hueSlider, brightnessNumber, contrastNumber, hueNumber].forEach((control) => {
     control.disabled = !phase3Progress.radioDecoded;
   });
 }
@@ -126,6 +228,7 @@ function refreshAuroraProgress() {
   if (phase3Progress.completed) {
     phase3Complete.classList.remove('hidden');
     retryPhaseSave.classList.toggle('hidden', Number(activePlayer.currentLevel) >= 4);
+    continuePhase4.classList.toggle('hidden', Number(activePlayer.currentLevel) < 4);
   }
 }
 
@@ -137,6 +240,7 @@ function activatePhase3(player) {
   }
 
   activePlayer = player;
+  renderInventory(player);
   phase3Progress = loadPhase3Progress(player.username);
   document.querySelector('.terminal-container').classList.add('hidden');
   auroraPhase.classList.remove('hidden');
@@ -254,6 +358,7 @@ function checkNASAAnomaly() {
     phase3Complete.classList.remove('hidden');
     retryPhaseSave.classList.add('hidden');
     phase3SaveStatus.textContent = 'Anomaly calibrated. Saving mission progress…';
+    phase3Complete.scrollIntoView({ behavior: 'smooth', block: 'center' });
     savePhase3Completion();
   }
 }
@@ -264,6 +369,7 @@ async function savePhase3Completion() {
   if (Number(activePlayer.currentLevel) >= 4) {
     phase3SaveStatus.textContent = 'Mission progress is saved to your player profile.';
     retryPhaseSave.classList.add('hidden');
+    continuePhase4.classList.remove('hidden');
     return;
   }
 
@@ -278,7 +384,7 @@ async function savePhase3Completion() {
   phase3SaveStatus.textContent = 'Saving mission progress…';
 
   try {
-    const response = await fetch(`${BASE_URL}/api/game/advance-phase`, {
+    const response = await fetch('/api/game/advance-phase', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: activePlayer.username }),
@@ -293,6 +399,7 @@ async function savePhase3Completion() {
     savePhase3Progress();
     document.getElementById('aurora-lock').textContent = 'SYSTEM AURORA CLEARED';
     phase3SaveStatus.textContent = 'Phase 3 complete — progress saved to your player profile.';
+    continuePhase4.classList.remove('hidden');
   } catch (error) {
     console.error('Could not save Phase 3 completion:', error);
     phase3SaveStatus.textContent = 'Puzzle solved, but the server could not save progress. Check your connection and retry.';
@@ -303,14 +410,38 @@ async function savePhase3Completion() {
 }
 
 retryPhaseSave.addEventListener('click', savePhase3Completion);
+continuePhase4.addEventListener('click', () => {
+  if (Number(activePlayer?.currentLevel) >= 4) {
+    window.location.assign('/phase4.html');
+  }
+});
 
 function updateNASAFilter() {
+  brightnessNumber.value = brightnessSlider.value;
+  contrastNumber.value = contrastSlider.value;
+  hueNumber.value = hueSlider.value;
+  document.getElementById('brightness-value').textContent = `${brightnessSlider.value}%`;
+  document.getElementById('contrast-value').textContent = `${contrastSlider.value}%`;
+  document.getElementById('hue-value').textContent = `${hueSlider.value}°`;
   document.getElementById('apodImage').style.filter = `brightness(${brightnessSlider.value}%) contrast(${contrastSlider.value}%) hue-rotate(${hueSlider.value}deg)`;
 }
 
 [brightnessSlider, contrastSlider, hueSlider].forEach((control) => {
   control.addEventListener('input', updateNASAFilter);
 });
+
+[[brightnessNumber, brightnessSlider], [contrastNumber, contrastSlider], [hueNumber, hueSlider]].forEach(([numberInput, slider]) => {
+  numberInput.addEventListener('input', () => {
+    const value = numberInput.valueAsNumber;
+    if (!Number.isInteger(value) || value < Number(slider.min) || value > Number(slider.max)) return;
+
+    slider.value = String(value);
+    updateNASAFilter();
+    checkNASAAnomaly();
+  });
+});
+
+updateNASAFilter();
 
 function resizeSignalCanvases() {
   [inputCanvas, outputCanvas].forEach((canvas) => {

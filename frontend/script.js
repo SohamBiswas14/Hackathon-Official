@@ -1,6 +1,3 @@
-// Base URL for the game backend.
-const BASE_URL = 'https://probable-parakeet-r76x4xqjp979hw49-3000.app.github.dev';
-
 const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
 const loginSection = document.getElementById('login-section');
@@ -39,7 +36,7 @@ async function submitAuthForm(form, endpoint) {
   try {
     const username = form.querySelector('input[type="text"]').value.trim();
     const password = form.querySelector('input[type="password"]').value;
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),

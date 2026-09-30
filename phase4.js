@@ -7,6 +7,7 @@ const CORRECT_CODE_3 = "omega_protocol";
 let timerInterval;
 let timeLeft = 180;
 let bombDefused = false;
+let isEnteringPhase5 = false;
 
 // --- DOM LOGIC ---
 
@@ -150,10 +151,56 @@ function triggerEndingDialogue() {
             setTimeout(typeWriter, 40);
         } else {
             setTimeout(() => {
-                alert("Proceeding to Phase 5: Singularity");
-                // In your final SPA, call your state transition function here
+                document.getElementById('ending-dialogue').classList.add('hidden');
+                const continuation = document.getElementById('phase5-continuation');
+                continuation.classList.remove('hidden');
+                continuation.classList.add('flex');
+                document.getElementById('btn-continue-phase5').focus();
             }, 4000);
         }
     }
     typeWriter();
 }
+
+document.getElementById('btn-continue-phase5').addEventListener('click', async () => {
+    if (isEnteringPhase5) return;
+
+    let player;
+    try {
+        player = JSON.parse(sessionStorage.getItem('asteria_player') || 'null');
+    } catch (error) {
+        player = null;
+    }
+
+    const status = document.getElementById('phase5-status');
+    const button = document.getElementById('btn-continue-phase5');
+    if (!player?.username || Number(player.currentLevel) < 4) {
+        status.textContent = 'Phase 4 profile not found. Return to Mission Control and sign in again.';
+        return;
+    }
+
+    isEnteringPhase5 = true;
+    button.disabled = true;
+    button.textContent = '[ SYNCHRONIZING ]';
+    status.textContent = 'Saving mission progress and opening the Singularity…';
+
+    try {
+        const response = await fetch('/api/game/advance-phase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: player.username }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Progress could not be saved.');
+
+        player.currentLevel = Number(result.newLevel);
+        player.currentLocation = result.newLocation || 'The Singularity';
+        sessionStorage.setItem('asteria_player', JSON.stringify(player));
+        window.location.assign('/phase5.html');
+    } catch (error) {
+        status.textContent = `Could not open Phase 5: ${error.message}`;
+        button.disabled = false;
+        button.textContent = '[ RETRY PHASE 5 TRANSITION ]';
+        isEnteringPhase5 = false;
+    }
+});

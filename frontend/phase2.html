@@ -7,6 +7,7 @@
     <title>Asteria - Planet Sonic Enigma</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/game-tools.css">
     <style>
         body {
             background-color: #000000;
@@ -29,7 +30,7 @@
 
     <!-- Settings Button -->
     <div class="absolute top-6 right-6 z-10">
-        <button class="border border-[#00ff00] px-3 py-1 text-xs hover:bg-[#00ff00] hover:text-black transition-colors">[ SETTINGS ]</button>
+        <button id="btn-settings" class="border border-[#00ff00] px-3 py-1 text-xs hover:bg-[#00ff00] hover:text-black transition-colors">[ SETTINGS ]</button>
     </div>
 
     <!-- Inventory Uplink Footer -->
@@ -45,6 +46,17 @@
         </div>
     </div>
 
+    <div id="tool-dialog" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/80 p-6" role="dialog" aria-modal="true" aria-labelledby="tool-dialog-title">
+        <section class="w-full max-w-md border border-[#00ff00] bg-black p-6 text-[#00ff00] shadow-[0_0_24px_rgba(0,255,0,0.2)]">
+            <h2 id="tool-dialog-title" class="mb-3 text-lg font-bold"></h2>
+            <p id="tool-dialog-message" class="mb-6 text-sm leading-relaxed"></p>
+            <div class="flex justify-end gap-3">
+                <button id="tool-dialog-action" class="hidden border border-[#00ff00] px-3 py-2 text-xs hover:bg-[#00ff00] hover:text-black"></button>
+                <button id="tool-dialog-close" class="border border-[#00ff00] px-3 py-2 text-xs hover:bg-[#00ff00] hover:text-black">[ CLOSE ]</button>
+            </div>
+        </section>
+    </div>
+
     <!-- Death Screen (Hidden by default) -->
     <div id="death-screen" class="hidden fixed inset-0 bg-red-950/90 z-50 flex flex-col justify-center items-center font-mono text-red-500">
         <h1 class="text-6xl font-bold mb-4 tracking-widest drop-shadow-[0_0_15px_red]">FATAL ERROR</h1>
@@ -56,6 +68,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Phase 2 Game Logic -->
     <script src="phase2.js"></script>
+    <script src="/game-tools.js"></script>
 </body>
 
 </html>
