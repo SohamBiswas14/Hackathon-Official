@@ -32,11 +32,29 @@ function showError(message) {
   targetText.style.color = 'red';
 }
 
+function getApiBase() {
+  const page = new URL(window.location.href);
+  if (page.protocol === 'file:') return 'http://localhost:3000';
+  if (page.port === '3000') return '';
+
+  if (['localhost', '127.0.0.1', '::1'].includes(page.hostname)) {
+    return `${page.protocol}//${page.hostname}:3000`;
+  }
+
+  const codespacesHost = page.hostname.match(/^(.*)-\d+(\.app\.github\.dev)$/);
+  if (codespacesHost) return `${page.protocol}//${codespacesHost[1]}-3000${codespacesHost[2]}`;
+
+  return '';
+}
+
 async function submitAuthForm(form, endpoint) {
+  const apiBase = getApiBase();
+  const apiUrl = `${apiBase}${endpoint}`;
+
   try {
     const username = form.querySelector('input[type="text"]').value.trim();
     const password = form.querySelector('input[type="password"]').value;
-    const response = await fetch(endpoint, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
@@ -49,7 +67,7 @@ async function submitAuthForm(form, endpoint) {
       showError(data.error || 'Authentication failed.');
     }
   } catch (error) {
-    showError('SINGULARITY INTERFERENCE: Backend not reachable.');
+    showError(`Backend not reachable at ${apiBase || window.location.origin}. Run the app with npm start on port 3000.`);
   }
 }
 
@@ -67,6 +85,20 @@ signupForm.addEventListener('submit', (event) => {
 async function loadNASAImage() {
   const apodImage = document.getElementById('apodImage');
   const nasaStatus = document.getElementById('nasa-status');
+  const fallbackImage = 'https://images-assets.nasa.gov/image/PIA04241/PIA04241~orig.jpg';
+  let usingFallback = true;
+
+  apodImage.alt = 'Pillars of Creation in the Eagle Nebula';
+  apodImage.src = fallbackImage;
+  apodImage.onerror = () => {
+    if (!usingFallback) {
+      usingFallback = true;
+      apodImage.src = fallbackImage;
+      nasaStatus.textContent = 'Live astronomy image unavailable; showing the Pillars of Creation reference image.';
+      return;
+    }
+    nasaStatus.textContent = 'Astronomy image could not be loaded. Slider answer remains brightness 125%, contrast 150%, hue 210°.';
+  };
 
   try {
     nasaStatus.textContent = 'CONNECTING TO NASA…';
@@ -80,6 +112,7 @@ async function loadNASAImage() {
     }
 
     apodImage.src = data.hdurl || data.url;
+    usingFallback = false;
     apodImage.alt = `NASA Astronomy Picture of the Day: ${data.title || 'Astronomy image'}`;
     nasaStatus.textContent = `NASA APOD: ${data.title || 'Image'} | ${data.date || ''}`;
   } catch (error) {

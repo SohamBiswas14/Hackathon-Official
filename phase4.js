@@ -155,7 +155,10 @@ function triggerEndingDialogue() {
                 const continuation = document.getElementById('phase5-continuation');
                 continuation.classList.remove('hidden');
                 continuation.classList.add('flex');
-                document.getElementById('btn-continue-phase5').focus();
+                const continueButton = document.getElementById('btn-continue-phase5');
+                document.getElementById('phase5-status').textContent = 'Briefing complete. Synchronizing your profile and opening Phase 5…';
+                continueButton.focus();
+                setTimeout(() => continueButton.click(), 700);
             }, 4000);
         }
     }
@@ -174,8 +177,12 @@ document.getElementById('btn-continue-phase5').addEventListener('click', async (
 
     const status = document.getElementById('phase5-status');
     const button = document.getElementById('btn-continue-phase5');
-    if (!player?.username || Number(player.currentLevel) < 4) {
-        status.textContent = 'Phase 4 profile not found. Return to Mission Control and sign in again.';
+    if (!player?.username) {
+        status.textContent = 'Player profile not found. Return to Mission Control and sign in again.';
+        return;
+    }
+    if (Number(player.currentLevel) < 4) {
+        status.textContent = `Phase 4 is not saved on this profile yet (current level: ${player.currentLevel || 'unknown'}). Complete Phase 3 and retry.`;
         return;
     }
 
@@ -193,7 +200,10 @@ document.getElementById('btn-continue-phase5').addEventListener('click', async (
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Progress could not be saved.');
 
-        player.currentLevel = Number(result.newLevel);
+        const newLevel = Number(result.newLevel);
+        if (newLevel < 5) throw new Error(`The server profile is at level ${newLevel}; Phase 4 progress has not synchronized yet.`);
+
+        player.currentLevel = newLevel;
         player.currentLocation = result.newLocation || 'The Singularity';
         sessionStorage.setItem('asteria_player', JSON.stringify(player));
         window.location.assign('/phase5.html');

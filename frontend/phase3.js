@@ -1,20 +1,21 @@
+let istTimeCode = '';
+let auroraTarget = { pitch: 8, amplitude: 7, noise: 2 };
+const anomalyTarget = { brightness: 125, contrast: 150, hue: 210 };
 const auroraPlanets = {
   alpha: {
     name: 'Planet Alpha',
-    clue: 'Signal fragment 1/3: PITCH is 8. The anomaly brightness is 125%.',
+    clue: '',
   },
   beta: {
     name: 'Planet Beta',
-    clue: 'Signal fragment 2/3: AMPLITUDE is 7. The anomaly contrast is 150%.',
+    clue: '',
   },
   gamma: {
     name: 'Planet Gamma',
-    clue: 'Signal fragment 3/3: NOISE is 2. The anomaly hue is 210°. The time code reads hour : noise : amplitude.',
+    clue: '',
   },
 };
 
-const auroraTarget = { pitch: 8, amplitude: 7, noise: 2 };
-const anomalyTarget = { brightness: 125, contrast: 150, hue: 210 };
 const auroraPhase = document.getElementById('phase-3');
 const auroraMessage = document.getElementById('aurora-message');
 const auroraClues = document.getElementById('aurora-clues');
@@ -92,7 +93,7 @@ const inventoryCatalog = {
   },
   hints: {
     title: 'Hints',
-    description: 'Scan all three planets. Enter 08:27 for the time code, tune pitch/noise/amplitude to 8/2/7, then set the anomaly to 125% brightness, 150% contrast, and 210° hue.',
+    description: 'Scan all three planets. Use the displayed, prefilled current IST time code, then tune the radio controls from the planetary fragments. Astronomy slider answer: brightness 125%, contrast 150%, hue 210°.',
   },
 };
 
@@ -185,8 +186,11 @@ function savePhase3Progress() {
 }
 
 function setControlsEnabled(enabled) {
-  [pitchKnob, amplitudeKnob, noiseKnob, timeInput, decodeTimeButton].forEach((control) => {
+  [timeInput, decodeTimeButton].forEach((control) => {
     control.disabled = !enabled;
+  });
+  [pitchKnob, amplitudeKnob, noiseKnob].forEach((control) => {
+    control.disabled = !enabled || !phase3Progress.timeDecoded;
   });
   [brightnessSlider, contrastSlider, hueSlider, brightnessNumber, contrastNumber, hueNumber].forEach((control) => {
     control.disabled = !phase3Progress.radioDecoded;
@@ -216,13 +220,12 @@ function refreshAuroraProgress() {
   }
 
   if (phase3Progress.timeDecoded) {
-    timeInput.value = '08:27';
-    timeCodeMessage.textContent = 'TIME CODE ACCEPTED — signal controls synchronized.';
+    timeCodeMessage.textContent = 'IST TIME ACCEPTED — set pitch, amplitude, and noise using the three planet fragments.';
   }
 
   if (phase3Progress.radioDecoded) {
     nasaSection.classList.remove('hidden');
-    nasaClueMessage.textContent = 'Anomaly coordinates recovered. Set brightness to 125%, contrast to 150%, and hue to 210°.';
+    nasaClueMessage.textContent = 'ASTRONOMY SLIDER ANSWER: brightness 125%, contrast 150%, hue 210°.';
   }
 
   if (phase3Progress.completed) {
@@ -240,8 +243,11 @@ function activatePhase3(player) {
   }
 
   activePlayer = player;
+  syncISTTimeTarget();
   renderInventory(player);
   phase3Progress = loadPhase3Progress(player.username);
+  if (!phase3Progress.radioDecoded) phase3Progress.timeDecoded = false;
+  timeInput.value = '';
   document.querySelector('.terminal-container').classList.add('hidden');
   auroraPhase.classList.remove('hidden');
   document.getElementById('aurora-lock').textContent = currentLevel >= 4
@@ -285,6 +291,28 @@ function scanPlanet(planetKey) {
   refreshAuroraProgress();
 }
 
+function syncISTTimeTarget() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const hour = parts.find((part) => part.type === 'hour').value;
+  const minute = parts.find((part) => part.type === 'minute').value;
+  istTimeCode = `${hour}:${minute}`;
+  auroraTarget = {
+    pitch: Number(hour),
+    noise: Number(minute[0]),
+    amplitude: Number(minute[1]),
+  };
+
+  auroraPlanets.alpha.clue = `Signal fragment 1/3: PITCH is ${auroraTarget.pitch}. The anomaly brightness is ${anomalyTarget.brightness}%.`;
+  auroraPlanets.beta.clue = `Signal fragment 2/3: AMPLITUDE is ${auroraTarget.amplitude}. The anomaly contrast is ${anomalyTarget.contrast}%.`;
+  auroraPlanets.gamma.clue = `Signal fragment 3/3: NOISE is ${auroraTarget.noise}. The anomaly hue is ${anomalyTarget.hue}°. The time code reads hour : noise : amplitude.`;
+  document.getElementById('ist-time-hint').textContent = `CURRENT IST TIME: ${istTimeCode}. Enter this time code below to unlock the radio controls.`;
+}
+
 document.querySelectorAll('.planet').forEach((planet) => {
   planet.addEventListener('click', () => scanPlanet(planet.dataset.planet));
 });
@@ -292,19 +320,13 @@ document.querySelectorAll('.planet').forEach((planet) => {
 decodeTimeButton.addEventListener('click', () => {
   if (!phase3Progress || phase3Progress.planets.length !== 3) return;
 
-  if (timeInput.value !== '08:27') {
-    timeCodeMessage.textContent = 'TIME CODE REJECTED — combine the fragments as hour : noise : amplitude.';
+  if (timeInput.value !== istTimeCode) {
+    timeCodeMessage.textContent = `TIME CODE REJECTED — enter the current IST time: ${istTimeCode}.`;
     return;
   }
 
-  const [hour, minute] = timeInput.value.split(':');
-  pitchKnob.value = Number(hour);
-  noiseKnob.value = Number(minute[0]);
-  amplitudeKnob.value = Number(minute[1]);
   phase3Progress.timeDecoded = true;
   savePhase3Progress();
-  updateKnobReadouts();
-  checkRadioSignal();
   refreshAuroraProgress();
 });
 
@@ -329,7 +351,7 @@ function checkRadioSignal() {
   phase3Progress.radioDecoded = true;
   savePhase3Progress();
   nasaSection.classList.remove('hidden');
-  [brightnessSlider, contrastSlider, hueSlider].forEach((control) => { control.disabled = false; });
+  setControlsEnabled(phase3Progress.planets.length === Object.keys(auroraPlanets).length);
   nasaClueMessage.textContent = 'Anomaly coordinates recovered. Set brightness to 125%, contrast to 150%, and hue to 210°.';
   nasaSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -369,7 +391,7 @@ async function savePhase3Completion() {
   if (Number(activePlayer.currentLevel) >= 4) {
     phase3SaveStatus.textContent = 'Mission progress is saved to your player profile.';
     retryPhaseSave.classList.add('hidden');
-    continuePhase4.classList.remove('hidden');
+    window.location.assign('/phase4.html');
     return;
   }
 
@@ -393,13 +415,16 @@ async function savePhase3Completion() {
 
     if (!response.ok) throw new Error(result.error || 'Progress save failed.');
 
-    activePlayer.currentLevel = Number(result.newLevel) || 4;
+    const newLevel = Number(result.newLevel);
+    if (newLevel < 4) throw new Error(`Progress saved at level ${newLevel}; Phase 4 is not unlocked yet.`);
+
+    activePlayer.currentLevel = newLevel;
     activePlayer.currentLocation = result.newLocation || 'Abyssal Void';
     sessionStorage.setItem('asteria_player', JSON.stringify(activePlayer));
     savePhase3Progress();
     document.getElementById('aurora-lock').textContent = 'SYSTEM AURORA CLEARED';
-    phase3SaveStatus.textContent = 'Phase 3 complete — progress saved to your player profile.';
-    continuePhase4.classList.remove('hidden');
+    phase3SaveStatus.textContent = 'Phase 3 complete — progress saved. Opening Phase 4…';
+    window.location.assign('/phase4.html');
   } catch (error) {
     console.error('Could not save Phase 3 completion:', error);
     phase3SaveStatus.textContent = 'Puzzle solved, but the server could not save progress. Check your connection and retry.';
