@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteria Terminal - Nexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="phase1.css">
+
+    <!-- Core Animation & 3D Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+
+<body>
+    <!-- 3D Environment -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- Cinematic CRT Scanline Overlay -->
+    <div class="crt-overlay"></div>
+
+    <!-- UI Terminal -->
+    <div class="terminal-container" id="terminal">
+        <header>
+            <h1 class="glitch" id="title-text"></h1>
+            <p class="subtitle" id="subtitle-text"></p>
+        </header>
+        <main class="login-box">
+            <div class="status-bar hidden" id="status-bar">
+                <span>CONNECTION: <span class="blink">SECURE</span></span>
+                <span>AUTH_REQUIRED</span>
+            </div>
+
+            <div id="login-section" class="hidden">
+                <form id="login-form">
+                    <div class="input-group">
+                        <label>> RECRUIT_ID_</label>
+                        <input type="text" id="recruit-id" autocomplete="off" required>
+                    </div>
+                    <div class="input-group">
+                        <label>> PASSKEY_</label>
+                        <input type="password" required>
+                    </div>
+                    <button type="submit" class="neon-btn">[ INITIATE_WARP ]</button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden Audio Elements (Set src when ready) -->
+    <audio id="bg-drone" loop src=""></audio>
+    <audio id="sfx-typing" src=""></audio>
+    <audio id="sfx-warp" src=""></audio>
+
+    <script src="phase1.js"></script>
+</body>
+
+</html>
