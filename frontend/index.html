@@ -126,19 +126,19 @@
 
             <div class="knob-control">
                 <label for="pitchKnob">PITCH</label>
-                <input id="pitchKnob" type="range" min="0" max="12" value="6">
+                <input id="pitchKnob" type="range" min="0" max="23" value="6">
                 <span id="pitchValue">6</span>
             </div>
 
             <div class="knob-control">
                 <label for="amplitudeKnob">AMPLITUDE</label>
-                <input id="amplitudeKnob" type="range" min="0" max="12" value="6">
+                <input id="amplitudeKnob" type="range" min="0" max="9" value="6">
                 <span id="amplitudeValue">6</span>
             </div>
 
             <div class="knob-control">
                 <label for="noiseKnob">NOISE</label>
-                <input id="noiseKnob" type="range" min="0" max="12" value="6">
+                <input id="noiseKnob" type="range" min="0" max="9" value="6">
                 <span id="noiseValue">6</span>
             </div>
 
@@ -151,6 +151,7 @@
         <h3>TIME CODE</h3>
 
         <input id="timeInput" type="time">
+        <p id="ist-time-hint" class="phase-message" role="status" aria-live="polite">Current IST time code will appear here. Enter it below to unlock the radio controls.</p>
 
         <button id="decodeTime">
             DECODE TIME
@@ -167,7 +168,7 @@
     <h2>NASA ANOMALY</h2>
 
     <p id="nasa-status">LOADING NASA DATA...</p>
-    <p id="nasa-clue-message" class="phase-message" aria-live="polite">Decode the radio signal to reveal the anomaly coordinates.</p>
+    <p id="nasa-clue-message" class="phase-message" aria-live="polite">Astronomy slider answer: brightness 125%, contrast 150%, hue 210°.</p>
 
     <div id="nasa-display">
 

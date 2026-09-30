@@ -45,16 +45,24 @@
         }
 
         .arrival {
-            width: min(100%, 760px);
-            padding: clamp(24px, 6vw, 64px);
+            width: min(100%, 920px);
+            padding: clamp(20px, 4vw, 40px);
             border: 1px solid rgba(0, 243, 255, 0.72);
             background: rgba(0, 0, 0, 0.82);
             box-shadow: 0 0 48px rgba(0, 243, 255, 0.14);
-            text-align: center;
+        }
+
+        .arrival-header {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 18px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.28);
         }
 
         .eyebrow {
-            margin: 0 0 18px;
+            margin: 0 0 12px;
             color: #00f3ff;
             font-size: 0.75rem;
             letter-spacing: 0.18em;
@@ -63,40 +71,253 @@
         h1 {
             margin: 0;
             color: #fff;
-            font-size: clamp(2.2rem, 10vw, 5rem);
+            font-size: clamp(2rem, 7vw, 4rem);
             line-height: 1.05;
         }
 
-        .message {
-            max-width: 520px;
-            margin: 24px auto 0;
-            color: #b8f7ff;
+        .connection-status, .turn-count {
+            margin: 0;
+            color: #00f3ff;
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            white-space: nowrap;
+        }
+
+        .transcript {
+            display: grid;
+            gap: 18px;
+            max-height: min(38vh, 340px);
+            min-height: 170px;
+            overflow-y: auto;
+            padding: 22px 4px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            scrollbar-color: rgba(0, 243, 255, 0.55) transparent;
+        }
+
+        .transcript-line {
+            max-width: 78ch;
+            padding-left: 14px;
+            border-left: 2px solid #00f3ff;
+            animation: line-arrive 240ms ease-out both;
+        }
+
+        .transcript-line.player {
+            justify-self: end;
+            padding: 0 14px 0 0;
+            border: 0;
+            border-right: 2px solid #a1aab2;
+            text-align: right;
+        }
+
+        .speaker {
+            margin: 0 0 6px;
+            color: #00f3ff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+        }
+
+        .player .speaker { color: #e0e6ed; }
+
+        .line-text {
+            margin: 0;
+            color: #d3faff;
+            font-size: 0.95rem;
             line-height: 1.7;
         }
 
+        .dialogue-prompt {
+            margin: 20px 0 12px;
+            color: rgba(184, 247, 255, 0.65);
+            font-size: 0.76rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+            gap: 10px;
+        }
+
+        .choice-button {
+            min-height: 54px;
+            padding: 12px 15px;
+            border: 1px solid rgba(0, 243, 255, 0.48);
+            background: rgba(0, 243, 255, 0.04);
+            color: #d3faff;
+            font: inherit;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            text-align: left;
+            cursor: pointer;
+            transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+        }
+
+        .choice-button:hover, .choice-button:focus-visible {
+            border-color: #00f3ff;
+            background: rgba(0, 243, 255, 0.14);
+            color: white;
+            outline: none;
+        }
+
+        .choice-button:focus-visible { box-shadow: 0 0 0 2px #050505, 0 0 0 4px #00f3ff; }
+
         .status {
-            display: inline-block;
-            margin-top: 32px;
-            padding: 10px 14px;
-            border: 1px solid rgba(0, 243, 255, 0.45);
-            color: #00f3ff;
-            font-size: 0.8rem;
+            margin: 20px 0 0;
+            color: rgba(0, 243, 255, 0.68);
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+        }
+
+        @keyframes line-arrive {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 560px) {
+            main { padding: 14px; }
+            .arrival-header { align-items: start; flex-direction: column; }
+            .transcript { max-height: 34vh; }
+            .transcript-line { max-width: 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/game-tools.css">
 </head>
 <body>
-    <img class="singularity-scene" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg/400px-Pillars_of_creation_2014_HST_WFC3-UVIS_full-res_denoised.jpg" alt="Pillars of Creation nebula">
+    <img class="singularity-scene" src="https://images-assets.nasa.gov/image/PIA04241/PIA04241~orig.jpg" alt="Pillars of Creation nebula">
     <div class="singularity-wash" aria-hidden="true"></div>
     <main>
         <section class="arrival" aria-labelledby="singularity-title">
-            <p class="eyebrow">PHASE 05 / FINAL TRANSMISSION</p>
-            <h1 id="singularity-title">THE SINGULARITY</h1>
-            <p class="message">Warp sequence complete. The Singularity is now active, and your mission data has been synchronized.</p>
-            <p class="status">SYSTEM STATUS: PHASE 5 ACTIVE</p>
+            <header class="arrival-header">
+                <div>
+                    <p class="eyebrow">PHASE 05 / INTERCEPTED TRANSMISSION</p>
+                    <h1 id="singularity-title">THE SINGULARITY</h1>
+                </div>
+                <p class="connection-status">● CHANNEL OPEN / COSMO POLO</p>
+            </header>
+            <div id="dialogue-log" class="transcript" role="log" aria-live="polite" aria-relevant="additions"></div>
+            <p id="dialogue-prompt" class="dialogue-prompt"></p>
+            <div id="dialogue-choices" class="choices" role="group" aria-label="Your response"></div>
+            <p id="dialogue-status" class="status" role="status" aria-live="polite">SYSTEM STATUS: PHASE 5 ACTIVE</p>
         </section>
     </main>
+    <script>
+        const dialogueLog = document.getElementById('dialogue-log');
+        const dialoguePrompt = document.getElementById('dialogue-prompt');
+        const dialogueChoices = document.getElementById('dialogue-choices');
+        const dialogueStatus = document.getElementById('dialogue-status');
+        const dialogueScenes = [
+            {
+                opening: 'Easy. If Mission Control sent you here, they told you I was the enemy. I am Cosmo Polo, and I have been trying to keep you from reaching the wrong answer.',
+                prompt: 'What do you say?',
+                choices: [
+                    { label: 'You are Cosmo Polo?', reply: 'That is the name they gave their traitor. I used to work in the outer observatory. Then I found out what our mission was really pointed at.' },
+                    { label: 'Did you sabotage the core?', reply: 'I damaged the containment shell to interrupt a collapse. They called it an attack and sent you to finish what their bomb started.' },
+                ],
+            },
+            {
+                opening: 'You deserve the truth. Ask the question Mission Control never let you ask.',
+                prompt: 'What do you need to know?',
+                choices: [
+                    { label: 'What is Asteria?', reply: 'Asteria is not a planet or a ship. It is the name they gave a containment structure built around a singularity. The stars you crossed were its boundary folding space.' },
+                    { label: 'Why did Mission Control call you a threat?', reply: 'Because I found their original command logs. They knew Asteria was a singularity, and they hid it behind a story about a rogue syndicate.' },
+                    { label: 'What was the bomb supposed to do?', reply: 'It was a failsafe wired to the containment shell. If it had detonated, the collapse would have erased the evidence and everyone near the event horizon.' },
+                ],
+            },
+            {
+                opening: 'The singularity is real. Asteria is the cage, not the thing inside it. Every mission you completed brought the cage closer to opening.',
+                prompt: 'What do you ask next?',
+                choices: [
+                    { label: 'You knew where the mission would lead?', reply: 'I saw the destination in the navigation data. I tried to warn the crew, but Mission Control cut my channel and made me the target.' },
+                    { label: 'Why bring us here at all?', reply: 'They needed someone they could call a hero until the last moment. You were meant to activate the final approach, then take the blame when Asteria opened.' },
+                ],
+            },
+            {
+                opening: 'Hear this clearly: Mission Control are the ones who built the lie. They concealed the singularity, armed the failsafe, and sent you after me to keep their hands clean. They are the true villains.',
+                prompt: 'How do you answer?',
+                choices: [
+                    { label: 'Give me the original command log.', reply: 'Transferring it now. The timestamps match every order they gave you, including the bomb sequence.' },
+                    { label: 'We expose them together.', reply: 'Then we start with the crew. Once they see the log, Mission Control loses control of the story.' },
+                ],
+            },
+            {
+                opening: 'The log is yours. Asteria is still contained, but its signal is waking up. The next choice belongs to you, not Mission Control.',
+                prompt: 'What do you tell Cosmo?',
+                choices: [
+                    { label: 'I will find the crew and show them the truth.', reply: 'I will keep this channel open. Whatever comes through that singularity, we face it with the truth on our side.', end: true },
+                    { label: 'I am done taking orders from Mission Control.', reply: 'Good. Then this is the first honest mission we have had. I will send you everything I know.', end: true },
+                ],
+            },
+        ];
+        let sceneIndex = 0;
+
+        function appendDialogueLine(speaker, text, kind) {
+            const line = document.createElement('article');
+            line.className = `transcript-line ${kind}`;
+
+            const speakerLabel = document.createElement('p');
+            speakerLabel.className = 'speaker';
+            speakerLabel.textContent = speaker;
+
+            const message = document.createElement('p');
+            message.className = 'line-text';
+            message.textContent = text;
+
+            line.append(speakerLabel, message);
+            dialogueLog.append(line);
+            dialogueLog.scrollTop = dialogueLog.scrollHeight;
+        }
+
+        function renderDialogueScene() {
+            const scene = dialogueScenes[sceneIndex];
+            appendDialogueLine('COSMO POLO', scene.opening, 'cosmo');
+            dialoguePrompt.textContent = scene.prompt;
+            dialogueChoices.replaceChildren();
+            dialogueStatus.textContent = `SYSTEM STATUS: PHASE 5 ACTIVE / TRANSMISSION ${String(sceneIndex + 1).padStart(2, '0')}`;
+
+            scene.choices.forEach((choice) => {
+                const button = document.createElement('button');
+                button.className = 'choice-button';
+                button.type = 'button';
+                button.textContent = choice.label;
+                button.addEventListener('click', () => {
+                    dialogueChoices.querySelectorAll('button').forEach((item) => { item.disabled = true; });
+                    appendDialogueLine('YOU', choice.label, 'player');
+                    appendDialogueLine('COSMO POLO', choice.reply, 'cosmo');
+
+                    if (choice.end) {
+                        dialoguePrompt.textContent = 'The channel is yours to close.';
+                        dialogueChoices.replaceChildren();
+                        const closeButton = document.createElement('button');
+                        closeButton.className = 'choice-button';
+                        closeButton.type = 'button';
+                        closeButton.textContent = '[ CLOSE TRANSMISSION ]';
+                        closeButton.addEventListener('click', () => {
+                            dialoguePrompt.textContent = 'Transmission ended. Asteria remains contained.';
+                            dialogueStatus.textContent = 'SYSTEM STATUS: PHASE 5 ACTIVE / COSMO POLO CHANNEL CLOSED';
+                            dialogueChoices.replaceChildren();
+                            closeButton.remove();
+                        });
+                        dialogueChoices.append(closeButton);
+                        closeButton.focus();
+                        return;
+                    }
+
+                    sceneIndex += 1;
+                    window.setTimeout(renderDialogueScene, 260);
+                });
+                dialogueChoices.append(button);
+            });
+        }
+
+        renderDialogueScene();
+    </script>
     <script src="/game-tools.js"></script>
 </body>
 </html>

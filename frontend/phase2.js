@@ -72,6 +72,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const interactiveStars = [];
     const selectedStars = [];
     const drawnLines = [];
+    let isCompletingConstellation = false;
 
     const starCoords = [
         // 7 True Big Dipper Stars
@@ -152,7 +153,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('click', (event) => {
-        if (event.target.closest('button, #tool-dialog')) return;
+        if (isCompletingConstellation || event.target.closest('button, #tool-dialog, #signal-dialog')) return;
 
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -221,40 +222,59 @@ window.addEventListener('DOMContentLoaded', () => {
                     activeAnchor = null;
 
                     // --- PUZZLE COMPLETION CHECK ---
-                    if (selectedStars.length === 7) {
+                    if (selectedStars.length === 7 && !isCompletingConstellation) {
                         const isCorrect = selectedStars.every(star => star.userData.isDipper);
                         if (isCorrect) {
-                            setTimeout(async () => {
-                                try {
-                                    const player = JSON.parse(sessionStorage.getItem('asteria_player') || 'null');
-                                    if (!player?.username) throw new Error('Sign in again to save Phase 2 progress.');
-
-                                    while (Number(player.currentLevel) < 3) {
-                                        const response = await fetch('/api/game/advance-phase', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ username: player.username })
-                                        });
-                                        const result = await response.json();
-                                        if (!response.ok) throw new Error(result.error || 'Phase progress could not be saved.');
-
-                                        player.currentLevel = Number(result.newLevel) || Number(player.currentLevel) + 1;
-                                        player.currentLocation = result.newLocation || 'System Aurora';
-                                    }
-
-                                    sessionStorage.setItem('asteria_player', JSON.stringify(player));
-                                    alert('Signal detected: [32.92, -56°78, 8e32]. System Aurora is unlocked — warping to Phase 3.');
-                                    window.location.href = 'index.html';
-                                } catch (error) {
-                                    console.error('Phase 2 progress save failed:', error);
-                                    alert(error.message || 'Warp failed. Please retry the constellation puzzle.');
-                                }
-                            }, 500);
+                            isCompletingConstellation = true;
+                            renderer.domElement.style.pointerEvents = 'none';
+                            document.getElementById('signal-dialog').classList.remove('hidden');
+                            setTimeout(completeBigDipper, 450);
                         }
                     }
                 } else {
                     activeAnchor.material.color.setHex(activeAnchor.userData.isDipper ? 0x00ffff : 0xffffff);
                     activeAnchor = null;
+                }
+
+                async function completeBigDipper() {
+                    const status = document.getElementById('signal-dialog-message');
+                    const action = document.getElementById('signal-dialog-action');
+
+                    try {
+                        const player = JSON.parse(sessionStorage.getItem('asteria_player') || 'null');
+                        if (!player?.username) throw new Error('Sign in again to save Phase 2 progress.');
+
+                        while (Number(player.currentLevel) < 3) {
+                            const response = await fetch('/api/game/advance-phase', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ username: player.username })
+                            });
+                            const result = await response.json();
+                            if (!response.ok) throw new Error(result.error || 'Phase progress could not be saved.');
+
+                            player.currentLevel = Number(result.newLevel) || Number(player.currentLevel) + 1;
+                            player.currentLocation = result.newLocation || 'System Aurora';
+                        }
+
+                        sessionStorage.setItem('asteria_player', JSON.stringify(player));
+                        status.textContent = 'Constellation confirmed. System Aurora is unlocked and your mission profile is synchronized.';
+                        action.disabled = false;
+                        action.textContent = '[ WARP TO SYSTEM AURORA ]';
+                        action.onclick = () => window.location.assign('/index.html');
+                        action.focus();
+                    } catch (error) {
+                        console.error('Phase 2 progress save failed:', error);
+                        status.textContent = `${error.message || 'Warp failed.'} Retry the uplink when ready.`;
+                        action.disabled = false;
+                        action.textContent = '[ RETRY UPLINK ]';
+                        action.onclick = () => {
+                            action.disabled = true;
+                            action.textContent = '[ RETRYING UPLINK ]';
+                            completeBigDipper();
+                        };
+                        action.focus();
+                    }
                 }
             }
         }
