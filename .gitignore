@@ -22,3 +22,4 @@ rad.json
 TestResults.xml
 #mongodb pwd
 .env
+env.txt 
